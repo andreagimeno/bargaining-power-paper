@@ -65,7 +65,6 @@ data/raw/
     ├── External debt stocks.csv             # World Bank WDI
     ├── 11723.xlsx                           # concessions data, sheet "H0"
     ├── tariffsPairs_88_21_vbeta1-2024-12.csv
-    ├── CRS by modality.xlsx                 # CRS disbursements by aid modality
     ├── BACI_HS92_V202601/                   # CEPII BACI bilateral trade data (HS92), by year
     │   ├── BACI_HS92_Y2004_V202601.csv
     │   ├── BACI_HS92_Y2005_V202601.csv
@@ -74,10 +73,12 @@ data/raw/
         └── tariff_GTAP_88_21_vbeta1-2024-12.csv
 ```
 
-> **Note:** `CRS by modality.xlsx` was referenced by the workflow but wasn't found
-> among the files moved into this repo — it will need to be re-obtained/placed at
-> `data/raw/aft-bargaining-power/CRS by modality.xlsx` before `02_descriptive_stats.R`
-> can run in full.
+> **Note:** `02_descriptive_stats.R` used to depend on a separately-downloaded
+> OECD file, `CRS by modality.xlsx`, for one chart (total ODA disbursements by
+> aid modality and year). That file was lost and isn't reproducible from a
+> clean OECD re-download with certainty, so the chart is now built directly
+> from `data/raw/CRS/` via the `Aid_T` -> modality-category crosswalk instead
+> — no external dependency for that chart anymore.
 
 `data/processed/` and `output/figures/` start empty and are populated by running
 the code (e.g. `CRS_Data.xlsx`, `concession_panel_2006_2021.csv`, `modality_plot.png`).

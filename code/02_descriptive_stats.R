@@ -4,7 +4,7 @@
 # donor shares of AfT, and the modality-by-year figure. Reads the raw CRS
 # files directly (independent of 01_build_dataset.R's output).
 #
-# Input:  data/raw/CRS/, data/raw/aft-bargaining-power/CRS by modality.xlsx
+# Input:  data/raw/CRS/
 # Output: output/figures/modality_plot.png
 
 source(here::here("code/00_packages.R"))
@@ -178,8 +178,18 @@ CRS_Data6 <- CRS_Data6 %>%
     Aid_T == "B032" ~ "Core contributions and pooled programmes and funds",
     Aid_T == "B033" ~ "Core contributions and pooled programmes and funds",
     Aid_T == "B05" ~ "Core contributions and pooled programmes and funds",
+    # Codes present in the raw CRS data but missing from the original mapping
+    # (verified against data/raw/CRS/): B02 is another pooled-fund flavour,
+    # F01 is debt relief, H02-H06 are other in-donor-expenditure subtypes.
+    Aid_T == "B02" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "F01" ~ "Debt relief",
+    Aid_T == "H02" ~ "Other in-donor expenditures",
+    Aid_T == "H03" ~ "Other in-donor expenditures",
+    Aid_T == "H04" ~ "Other in-donor expenditures",
+    Aid_T == "H05" ~ "Other in-donor expenditures",
+    Aid_T == "H06" ~ "Other in-donor expenditures",
     TRUE ~ Aid_T
-  ))      
+  ))
 
 bar_colors <- c(
   "Budget support" = "#ACD4EC",
@@ -187,10 +197,11 @@ bar_colors <- c(
   "Project-type interventions" = "#d6604d",
   "Experts and other technical assistance" = "#4D7EAB",
   "Scholarships and student costs in donor countries" = "#2E5B88",
+  "Debt relief" = "#8c510a",
   "Not defined" = "lightgrey",
   "Administrative costs not included elsewhere" = "#B9DDF1",
   "Other in-donor expenditures" = "#CFDCEF"
-)  
+)
 
 modality_plot <- ggplot(CRS_Data6,
                     aes(x = Year, y = USD_Disbursement, fill = Aid_T)) +
@@ -211,8 +222,6 @@ ggsave(
   height = 9,
   dpi    = 400
 )
-
-modality_plot <- ggplot(aes(x = Year, y = ))
 
 # Total AfT in 2023:
 total_aft_2023 <- 3046.92289 + 12194.25748 + 413.99074 + 1878.08738 + 246.66033 + 660.42240 + 135.82669 + 66.20454 + 79615.50447 + 169.36709 + 1185.62570 + 43.19297 + 16.30620 + 15.42903 + 4.02969
@@ -267,23 +276,28 @@ pct_bilateral_aft_top5 <- 100 * aft_bilateral_top5 / aft_bilateral_total
 print(pct_bilateral_aft_top5)
 
 # Increase of project-based aid relative to other modalities:
-CRS_by_modality <- read_excel(here::here("data/raw/aft-bargaining-power/CRS by modality.xlsx"))
-
-CRS_by_modality <- CRS_by_modality %>%
-  select(Modality7, TIME_PERIOD, OBS_VALUE)
-
-CRS_by_modality <- CRS_by_modality %>%
+#
+# Total ODA (all sectors, not just AfT-relevant ones -- contrast with the
+# AfT-only modality_plot above) by modality and year, built directly from
+# the raw CRS files via the Aid_T -> Modality7 crosswalk (previously this
+# came from a separate OECD Data Explorer download, "CRS by modality.xlsx",
+# which is no longer available; the codes below were verified against the
+# actual Aid_T values present in data/raw/CRS/).
+oda_by_year_modality <- CRS_Data7 %>%
+  mutate(Aid_T = replace_na(Aid_T, "Not defined")) %>%
   mutate(Modality7 = case_when(
-    Modality7 == "Other in-donor expenditures" ~ "Other",
-    Modality7 == "Scholarships and student costs in donor countries" ~ "Other",
-    Modality7 == "Administrative costs not included elsewhere" ~ "Other",
-    TRUE ~ Modality7
-  ))
-
-oda_by_year_modality <- CRS_by_modality %>%
-  group_by(TIME_PERIOD, Modality7) %>%
+    Aid_T %in% c("A01", "A02") ~ "Budget support",
+    Aid_T %in% c("B01", "B02", "B03", "B031", "B032", "B033", "B04", "B05") ~
+      "Core contributions and pooled programmes and funds",
+    Aid_T == "C01" ~ "Project-type interventions",
+    Aid_T %in% c("D01", "D02") ~ "Experts and other technical assistance",
+    Aid_T == "F01" ~ "Debt relief",
+    Aid_T == "Not defined" ~ "Not defined",
+    TRUE ~ "Other"   # E01/E02 (scholarships), G01 (admin), H01-H06 (other in-donor)
+  )) %>%
+  group_by(TIME_PERIOD = Year, Modality7) %>%
   summarise(
-    total_oda = sum(OBS_VALUE, na.rm = TRUE),
+    total_oda = sum(USD_Disbursement, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -293,7 +307,8 @@ bar_colors <- c(
   "Debt relief" = "#00b4d8",
   "Experts and other technical assistance" = "#90e0ef",
   "Other" = "#caf0f8",
-  "Project-type interventions" = "lightgrey"
+  "Not defined" = "lightgrey",
+  "Project-type interventions" = "darkgrey"
 )
 
 ggplot(oda_by_year_modality,

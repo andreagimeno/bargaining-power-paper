@@ -17,6 +17,7 @@
 *.Rout
 *_cache/
 *_files/
+Rplots.pdf
 
 # macOS
 .DS_Store
