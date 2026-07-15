@@ -11,14 +11,26 @@ recipient-donor-year panel, then runs the paper's regressions and figures.
 
 ```
 .
-├── Final full workflow.Rmd   # full pipeline: data build -> panel -> models -> figures
+├── code/
+│   ├── 00_packages.R          # single source of truth for package dependencies
+│   ├── 01_build_dataset.R     # data build: CRS + covariates -> data/processed/CRS_Data.xlsx
+│   ├── 02_descriptive_stats.R # descriptive numbers/figure used in the paper text
+│   └── 03_analysis.Rmd        # construct building, SUR model, bootstrap, figures, robustness
 ├── data/
-│   ├── raw/                  # source datasets, as downloaded (gitignored, see below)
-│   └── processed/            # intermediate/derived files written by the workflow (gitignored)
+│   ├── codebook.md            # variable definitions for the analysis panel
+│   ├── raw/                   # source datasets, as downloaded (gitignored, see below)
+│   └── processed/             # intermediate/derived files written by 01 and 03 (gitignored)
 ├── output/
-│   └── figures/              # figures saved by the workflow (gitignored)
+│   └── figures/                # figures saved by 02 and 03 (gitignored)
 └── bargaining-power-paper.Rproj
 ```
+
+The workflow used to be a single 4,800-line notebook. It's now split into a
+build stage and an analysis stage — see "Running the workflow" below — which
+is the convention expected by most journal replication-package standards
+(e.g. the AEA Data and Code Availability Standard): data construction is
+reproducible independently of the modeling, and each script states its
+inputs/outputs at the top.
 
 ## Data
 
@@ -64,28 +76,35 @@ data/raw/
 
 > **Note:** `CRS by modality.xlsx` was referenced by the workflow but wasn't found
 > among the files moved into this repo — it will need to be re-obtained/placed at
-> `data/raw/aft-bargaining-power/CRS by modality.xlsx` before that section of the
-> `.Rmd` can run.
+> `data/raw/aft-bargaining-power/CRS by modality.xlsx` before `02_descriptive_stats.R`
+> can run in full.
 
 `data/processed/` and `output/figures/` start empty and are populated by running
-the workflow (e.g. `CRS_Data.xlsx`, `concession_panel_2006_2021.csv`,
-`modality_plot.png`).
+the code (e.g. `CRS_Data.xlsx`, `concession_panel_2006_2021.csv`, `modality_plot.png`).
+See `data/codebook.md` for what the constructed variables in the final panel mean.
 
 ## Running the workflow
 
 1. Open `bargaining-power-paper.Rproj` in RStudio (this makes the project root
-   resolvable via the `here` package, which all file paths in the `.Rmd` rely on).
+   resolvable via the `here` package, which all file paths rely on).
 2. Make sure `data/raw/` is populated as above.
-3. Run `Final full workflow.Rmd` chunk by chunk, or knit it end to end.
+3. Run in order:
+   - `code/01_build_dataset.R` — builds `data/processed/CRS_Data.xlsx`
+   - `code/02_descriptive_stats.R` — independent of step 1; produces the paper's descriptive numbers/figure
+   - `code/03_analysis.Rmd` — reads `data/processed/CRS_Data.xlsx`, runs the models, knit for the full output
+
+Each script sources `code/00_packages.R` itself, so they can be run standalone
+once `data/raw/` and (for step 3) `data/processed/CRS_Data.xlsx` exist.
 
 ### Packages
 
-The workflow relies on `here`, `dplyr`, `ggplot2`, `tidyr`, `writexl`, `readr`,
+All three scripts depend on `here`, `dplyr`, `ggplot2`, `tidyr`, `writexl`, `readr`,
 `readxl`, `stringr`, `purrr`, `lubridate`, `psych`, `naniar`, `performance`,
 `lavaan`, `semPlot`, `semTools`, `mice`, `Matrix`, `seminr`, `systemfit`,
 `ggridges`, `DiagrammeR`, `DiagrammeRsvg`, `magrittr`, `xml2`, `plm`,
 `multiwayvcov`, `sandwich`, `MASS`, `fixest`, `msm`, `marginaleffects`,
-`patchwork`, `interactions`, `RColorBrewer`, `effects`, and `countrycode`.
+`patchwork`, `interactions`, `RColorBrewer`, `effects`, and `countrycode`
+— see `code/00_packages.R` for the full list.
 
 A natural next step for reproducibility is to pin these with
 [`renv`](https://rstudio.github.io/renv/) (`renv::init()`), which isn't set up yet.

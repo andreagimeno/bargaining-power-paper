@@ -1,0 +1,567 @@
+---
+title: "Analysis — Bargaining Power and Aid for Trade"
+output: html_notebook
+---
+
+Builds the bargaining-power construct (`alpha`) from the panel produced by
+`code/01_build_dataset.R`, estimates the SUR model, runs the dyad cluster
+bootstrap, and produces the paper's figures and robustness checks.
+
+```{r message=FALSE, warning=FALSE}
+source(here::here("code/00_packages.R"))
+CRS_Data <- read_excel(here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Data preparation:
+
+```{r}
+colnames(CRS_Data)
+```
+
+```{r warning=FALSE}
+# Coerce raw columns to numeric:
+
+num_cols <- c("USD_Disbursement", "Other_AfT", "COL_FR","COL_UK","COL_US","COL_JP","distwces",
+              "Foreign_pop", "VA", "Cost_Trade", "cc","pv","rq","rl","ge", "external_debt", "total_reserves", "gdp_growth")
+CRS_Data <- CRS_Data %>%
+  mutate(across(all_of(intersect(num_cols, names(CRS_Data))),
+                ~ suppressWarnings(as.numeric(.))))
+```
+
+```{r warning=FALSE}
+# DV + dyadic transformation:
+
+CRS_Data <- CRS_Data %>%
+  mutate(
+    log_Total_AfT = log1p(USD_Disbursement),
+    log_Other_AfT = log1p(Other_AfT), 
+    across(c(COL_FR, COL_UK, COL_US, COL_JP), ~ ifelse(is.na(.), 0, .)),
+    col_history = COL_FR + COL_UK + COL_US + COL_JP,
+    proximity = -log(distwces),
+    log_Foreign = log1p(Foreign_pop),
+    log_VA          = log1p(VA),
+    VA_share = VA / total_exports_donor,
+    Cost_Trade_inv = -Cost_Trade,
+  ) %>%
+  arrange(DonorName, RecipientName, Year) %>%
+  group_by(DonorName, RecipientName) %>%
+  mutate(across(c(log_Other_AfT, total_reserves, gdp_growth, external_debt,
+                  total_asym, VA, VA_share),
+                ~ lag(.), .names = "{.col}_lag")) %>%
+  ungroup()
+```
+
+```{r}
+winsor_top <- function(x, p = 0.99) pmin(x, quantile(x, p, na.rm = TRUE))
+
+CRS_Data <- CRS_Data %>%
+  mutate(
+    external_debt_lag  = winsor_top(external_debt_lag,  0.99),
+    total_reserves_lag = winsor_top(total_reserves_lag, 0.99)
+  )
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data2.xlsx"))
+```
+
+### Equal weighting (formative) construct building:
+
+```{r}
+# EBT — Bargaining power (alpha) construction
+# Formative, equal-weighted composite of four dimensions.
+#
+# Outside options are NOT folded into alpha: in the SUR,
+#   log_Other_AfT_lag      enters as the recipient threat point d_R (+)
+#   donor_threat_dyad_lag  enters as the donor threat point   d_D (-)
+# alpha is the relative-power weight; the threat points are separate.
+#
+# Two urgency specs are built:
+#   alpha_core  = urgency from reserves / growth / debt only  (PRIMARY)
+#   alpha_ext   = urgency also including eci + Cost_Trade      (ROBUSTNESS)
+
+## z-score that ignores NAs and leaves NA positions as NA
+z <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+```
+
+```{r}
+## Extra indicators for the urgency robustness:
+CRS_Data <- CRS_Data %>%
+  arrange(DonorName, RecipientName, Year_int) %>%
+  group_by(DonorName, RecipientName) %>%
+  mutate(
+    eci_lag            = lag(eci),
+    Cost_Trade_inv_lag = lag(Cost_Trade_inv)
+  ) %>%
+  ungroup()
+```
+
+```{r}
+## Oriented z-scores (all signed so higher = higher recipient power):
+CRS_Data <- CRS_Data %>%
+  mutate(
+    # urgency / crisis
+    z_reserves = z(total_reserves_lag),        # +
+    z_growth   = z(gdp_growth_lag),            # +
+    z_debt     = -z(external_debt_lag),        # -  (debt = distress)
+    z_eci      = z(eci_lag),                   # +  (variant only)
+    z_cost     = z(Cost_Trade_inv_lag),        # +  (variant only; already inverted)
+    # geopolitical stake (donor interest -> worse donor outside option)
+    z_foreign  = z(log_Foreign),               # +
+    z_agree    = z(agree),                     # +
+    z_prox     = z(proximity),                 # +
+    z_col      = z(col_history),               # +
+    # commercial asymmetric dependence
+    z_asym     = z(total_asym_lag),            # +
+    z_vashare  = z(VA_share_lag),              # +
+    # institutional capacity (reflective WGI block)
+    z_cc = z(cc), z_ge = z(ge), z_pv = z(pv), z_rq = z(rq)   # +
+  )
+```
+
+```{r}
+## Dimension scores: mean of oriented z-scores (use what's present)
+##  na.rm = TRUE so a dimension survives partial missingness; this matters
+##  most for commercial (total_asym + VA_share both have gaps).
+CRS_Data <- CRS_Data %>%
+  mutate(
+    dim_urgency_core = rowMeans(cbind(z_reserves, z_growth, z_debt), na.rm = TRUE),
+    dim_urgency_ext  = rowMeans(cbind(z_reserves, z_growth, z_debt, z_eci, z_cost), na.rm = TRUE),
+    dim_geo          = rowMeans(cbind(z_foreign, z_agree, z_prox, z_col), na.rm = TRUE),
+    dim_comm         = rowMeans(cbind(z_asym, z_vashare), na.rm = TRUE),
+    dim_inst         = rowMeans(cbind(z_cc, z_ge, z_pv, z_rq), na.rm = TRUE)
+  ) %>%
+  mutate(across(starts_with("dim_"), ~ ifelse(is.nan(.), NA, .)))   # all-NA row -> NA
+```
+
+```{r}
+## Re-standardise each dimension before averaging into alpha
+##  Averaging z-scores shrinks variance unevenly across dimensions, so a raw
+##  cross-dimension mean would weight the higher-variance dimensions more.
+##  Re-standardising each dimension to SD 1 is what makes the final average a
+##  genuine EQUAL weighting of the four dimensions.
+CRS_Data <- CRS_Data %>%
+  mutate(
+    s_urgency_core = z(dim_urgency_core),
+    s_urgency_ext  = z(dim_urgency_ext),
+    s_geo          = z(dim_geo),
+    s_comm         = z(dim_comm),
+    s_inst         = z(dim_inst)
+  )
+```
+
+```{r}
+## alpha = equal-weight mean of the four standardised dimensions:
+CRS_Data <- CRS_Data %>%
+  mutate(
+    n_dims_core = rowSums(!is.na(cbind(s_urgency_core, s_geo, s_comm, s_inst))),
+    n_dims_ext  = rowSums(!is.na(cbind(s_urgency_ext,  s_geo, s_comm, s_inst))),
+    alpha_core  = rowMeans(cbind(s_urgency_core, s_geo, s_comm, s_inst), na.rm = TRUE),
+    alpha_ext   = rowMeans(cbind(s_urgency_ext,  s_geo, s_comm, s_inst), na.rm = TRUE)
+  ) %>%
+  mutate(across(c(alpha_core, alpha_ext), ~ ifelse(is.nan(.), NA, .)))
+```
+
+```{r}
+## Diagnostics:
+cat("\n--- Dimension coverage per row (core alpha) ---\n")
+print(table(CRS_Data$n_dims_core))
+cat("Share of rows with all four dimensions:",
+    round(mean(CRS_Data$n_dims_core == 4, na.rm = TRUE), 3), "\n")
+
+cat("\n--- Dimension inter-correlations (modest = healthy formative) ---\n")
+print(round(cor(CRS_Data[, c("s_urgency_core","s_geo","s_comm","s_inst")],
+                use = "pairwise.complete.obs"), 2))
+
+cat("\n--- alpha_core summary ---\n")
+print(summary(CRS_Data$alpha_core))
+
+cat("\n--- alpha vs outcomes (CIRCULARITY CHECK — want modest |r|) ---\n")
+print(round(cor(cbind(alpha   = CRS_Data$alpha_core,
+                      flow    = log1p(CRS_Data$USD_Disbursement),
+                      channel = CRS_Data$ChannelBalance,
+                      trade   = CRS_Data$trade_concession),
+                use = "pairwise.complete.obs"), 2))
+
+cat("\n--- core vs extended alpha (should be very highly correlated) ---\n")
+print(round(cor(CRS_Data$alpha_core, CRS_Data$alpha_ext,
+                use = "pairwise.complete.obs"), 3))
+```
+
+```{r}
+summary(CRS_Data$USD_Disbursement)
+sum(CRS_Data$USD_Disbursement < 0, na.rm = TRUE)
+```
+
+```{r}
+# Floor AfT flows at 0 to get rid of 7 negative flows:
+CRS_Data$flow_log <- log1p(pmax(CRS_Data$USD_Disbursement, 0))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data3.xlsx"))
+```
+
+### SUR specification:
+
+```{r}
+# ============================================================
+# EBT — Between-dyad SUR of the three negotiation outcomes
+#
+# Three jointly-estimated equations:
+#   flow     = flow_log         (aid size)
+#   channel  = ChannelBalance   (design command)
+#   trade    = trade_concession (policy concession; = -eff_tariff)
+#
+# Regressors (the Nash structure):
+#   alpha_z  relative bargaining power           (the four-dimension composite)
+#   dR_z     recipient threat point  log_Other_AfT_lag      (+)
+#   dD_z     donor threat point      donor_threat_dyad_lag  (-)
+#   Year_f   year fixed effects
+#
+# NO dyad FE: alpha is ~entirely between-dyad, so dyad FE collapse the system.
+# Identification is off cross-dyad variation, which is the theoretically
+# relevant variation (bargaining power is a structural feature of a dyad).
+# ============================================================
+
+# Estimation frame: four-complete alpha + all model vars present
+est <- CRS_Data %>%
+  filter(n_dims_core == 4,
+         !is.na(alpha_core), !is.na(flow_log), !is.na(ChannelBalance),
+         !is.na(preference_margin),
+         !is.na(log_Other_AfT_lag), !is.na(donor_threat_dyad_lag)) %>%
+  mutate(Year_f  = droplevels(factor(Year_int)),
+         alpha_z = z(alpha_core),
+         dR_z    = z(log_Other_AfT_lag),
+         dD_z    = z(donor_threat_dyad_lag))
+
+cat("Estimation N:", nrow(est),
+    "| dyads:", dplyr::n_distinct(paste(est$DonorName, est$RecipientName)), "\n")
+
+# Collinearity check first:
+cat("\n--- Correlations among the three power regressors ---\n")
+print(round(cor(est[, c("alpha_z", "dR_z", "dD_z")]), 2))
+
+cat("\n--- VIFs (read the alpha_z / dR_z / dD_z rows; want well under 5) ---\n")
+print(vif(lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, data = est)))
+```
+
+```{r}
+# Descriptives:
+
+## Structural vs dynamic variance of alpha:
+bw <- est %>% group_by(DonorName, RecipientName) %>%
+  mutate(a_between = mean(alpha_core), a_within = alpha_core - a_between) %>% ungroup()
+vb <- var(bw$a_between); vw <- var(bw$a_within)
+cat("between share:", round(vb/(vb+vw), 3), "| within share:", round(vw/(vb+vw), 3), "\n")
+
+## Donor-level distribution of recipient power:
+donor_tab <- est %>%
+  group_by(DonorName, RecipientName) %>% summarise(m = mean(alpha_core), .groups="drop") %>%
+  group_by(DonorName) %>%
+  summarise(mean_alpha = round(mean(m),3), pct_below_0 = round(mean(m<0)*100,1),
+            n_dyads = n(), .groups="drop") %>% arrange(mean_alpha)
+print(donor_tab)
+
+## Figure 4:
+fig4 <- est %>% group_by(DonorName, RecipientName) %>% summarise(m = mean(alpha_core), .groups="drop")
+ggplot(fig4, aes(DonorName, m)) +
+  geom_violin(alpha = .5, colour = "grey", fill = "grey") + geom_boxplot(width = .15, outlier.size = .5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = NULL, y = "Mean recipient bargaining power (alpha)") +
+  theme_minimal(base_size = 12) + theme(legend.position = "none")
+```
+
+```{r}
+# Collinearity check + SUR + residual correlations:
+print(round(cor(est[, c("alpha_z","dR_z","dD_z")]), 2))
+print(vif(lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, data = est)))
+
+sur <- systemfit(list(
+  flow    = flow_log          ~ alpha_z + dR_z + dD_z + Year_f,
+  channel = ChannelBalance    ~ alpha_z + dR_z + dD_z + Year_f,
+  trade   = preference_margin ~ alpha_z + dR_z + dD_z + Year_f),
+  method = "SUR", data = est)
+print(summary(sur))
+print(round(cor(residuals(sur)), 3))    # <- this IS your P2(a); Table 2
+```
+
+#### Dyad cluster-bootstrap of the WHOLE pipeline  (the central inference fix):
+
+```{r}
+# Bargaining power is an estimated regressor, so honest SEs require re-estimating the PLS construct inside each resample. Cluster on dyad; keep boot_mat for the marginal-effect CIs in step 6b.
+```
+
+```{r}
+# EBT — Dyad cluster bootstrap:
+
+## build_alpha and fit_coefs now use the same dimension names as the construction (s_urgency_core, n_dims_core), z is gone from here (it's global), and fit_coefs is extended to capture the flow and channel decompositions too, so the whole of Table 4 comes out of one run with intervals:
+
+build_alpha <- function(df) {
+  df %>%
+    mutate(
+      z_reserves = z(total_reserves_lag), z_growth = z(gdp_growth_lag), z_debt = -z(external_debt_lag),
+      z_foreign = z(log_Foreign), z_agree = z(agree), z_prox = z(proximity), z_col = z(col_history),
+      z_asym = z(total_asym_lag), z_vashare = z(VA_share_lag),
+      z_cc = z(cc), z_ge = z(ge), z_pv = z(pv), z_rq = z(rq)
+    ) %>%
+    mutate(
+      dim_urgency_core = rowMeans(cbind(z_reserves, z_growth, z_debt), na.rm = TRUE),
+      dim_geo  = rowMeans(cbind(z_foreign, z_agree, z_prox, z_col), na.rm = TRUE),
+      dim_comm = rowMeans(cbind(z_asym, z_vashare), na.rm = TRUE),
+      dim_inst = rowMeans(cbind(z_cc, z_ge, z_pv, z_rq), na.rm = TRUE)
+    ) %>%
+    mutate(across(starts_with("dim_"), ~ ifelse(is.nan(.), NA, .))) %>%
+    mutate(
+      s_urgency_core = z(dim_urgency_core), s_geo = z(dim_geo), s_comm = z(dim_comm), s_inst = z(dim_inst),
+      n_dims_core = rowSums(!is.na(cbind(s_urgency_core, s_geo, s_comm, s_inst))),
+      alpha_core  = rowMeans(cbind(s_urgency_core, s_geo, s_comm, s_inst), na.rm = TRUE),
+      alpha_core  = ifelse(is.nan(alpha_core), NA, alpha_core)
+    )
+}
+
+fit_coefs <- function(df) {
+  d <- df %>%
+    filter(n_dims_core == 4,
+           !is.na(alpha_core), !is.na(flow_log), !is.na(ChannelBalance),
+           !is.na(preference_margin), !is.na(log_Other_AfT_lag), !is.na(donor_threat_dyad_lag)) %>%
+    mutate(Year_f = factor(Year_int), alpha_z = z(alpha_core),
+           dR_z = z(log_Other_AfT_lag), dD_z = z(donor_threat_dyad_lag))
+  g <- function(m, t) unname(coef(m)[t]); D <- c("s_urgency_core","s_geo","s_comm","s_inst")
+
+  mf <- lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, d)
+  mc <- lm(ChannelBalance ~ alpha_z + dR_z + dD_z + Year_f, d)
+  mt <- lm(preference_margin ~ alpha_z + dR_z + dD_z + Year_f, d)
+  df_ <- lm(flow_log          ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+  dc_ <- lm(ChannelBalance    ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+  dt_ <- lm(preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+
+  c(flow_alpha=g(mf,"alpha_z"),  flow_dR=g(mf,"dR_z"),  flow_dD=g(mf,"dD_z"),
+    chan_alpha=g(mc,"alpha_z"),  chan_dR=g(mc,"dR_z"),  chan_dD=g(mc,"dD_z"),
+    trade_alpha=g(mt,"alpha_z"), trade_dR=g(mt,"dR_z"), trade_dD=g(mt,"dD_z"),
+    flow_urg=g(df_,D[1]),  flow_geo=g(df_,D[2]),  flow_comm=g(df_,D[3]),  flow_inst=g(df_,D[4]),
+    chan_urg=g(dc_,D[1]),  chan_geo=g(dc_,D[2]),  chan_comm=g(dc_,D[3]),  chan_inst=g(dc_,D[4]),
+    trade_urg=g(dt_,D[1]), trade_geo=g(dt_,D[2]), trade_comm=g(dt_,D[3]), trade_inst=g(dt_,D[4]))
+}
+
+point <- fit_coefs(build_alpha(CRS_Data))
+
+set.seed(123); B <- 2000
+CRS_Data$dyad_id <- paste(CRS_Data$DonorName, CRS_Data$RecipientName)
+dyads <- unique(CRS_Data$dyad_id); dyad_rows <- split(seq_len(nrow(CRS_Data)), CRS_Data$dyad_id)
+K <- length(point)
+boot <- matrix(NA_real_, B, K, dimnames = list(NULL, names(point)))
+for (b in seq_len(B)) {
+  idx <- unlist(dyad_rows[sample(dyads, length(dyads), replace = TRUE)], use.names = FALSE)
+  boot[b, ] <- tryCatch(fit_coefs(build_alpha(CRS_Data[idx, ])), error = function(e) rep(NA_real_, K))
+  if (b %% 100 == 0) cat("resample", b, "of", B, "\n")
+}
+
+res <- data.frame(coef = names(point), estimate = round(point,4),
+  boot_se = round(apply(boot,2,sd,na.rm=TRUE),4),
+  ci_lo = round(apply(boot,2,quantile,.025,na.rm=TRUE),4),
+  ci_hi = round(apply(boot,2,quantile,.975,na.rm=TRUE),4))
+res$sig <- ifelse(res$ci_lo > 0 | res$ci_hi < 0, "*", "")
+print(res, row.names = FALSE)
+```
+
+```{r}
+vif(lm(preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, data = est))
+```
+#### P1 — power shapes all three outcomes simultaneously:
+
+```{r}
+# The per-equation intervals in res are the primary P1 evidence, but this is the system-level "alpha is jointly non-zero" summary of
+```
+
+```{r}
+bp_terms <- c("flow_alpha", "chan_alpha", "trade_alpha")
+V <- cov(boot[, bp_terms], use = "complete.obs")
+W <- as.numeric(t(point[bp_terms]) %*% solve(V) %*% point[bp_terms])
+cat("Joint Wald W =", round(W,2), " p =", signif(pchisq(W, length(bp_terms), lower.tail = FALSE), 3), "\n")
+```
+
+#### P2 — trade-offs, two pieces, no interaction terms:
+
+```{r}
+# P2 — two pieces, both already produced above.
+
+## Piece (a) is the residual-correlation matrix from chunk 5 (cor(residuals(sur))); the live cell is the positive flow–channel correlation, read as co-movement/complementarity, with a negative off-diagonal being the conditional trade-off.
+
+## Piece (b) is the decomposition rows of res (*_urg/geo/comm/inst), where commercial sitting below zero against geopolitical/institutional above it is the heterogeneity result. There is no quadratic marginal-effects step any more.
+```
+
+#### Breusch-Pagan test:
+
+```{r}
+R <- cor(residuals(sur)); Tn <- nrow(est)
+LM <- Tn * sum(R[lower.tri(R)]^2)
+cat("Breusch-Pagan LM =", round(LM, 1), "| df =", choose(ncol(R), 2),
+    "| p =", signif(pchisq(LM, choose(ncol(R), 2), lower.tail = FALSE), 3), "\n")
+```
+
+#### Trade-off test:
+
+```{r}
+# terciles by dyad-mean power, so each dyad sits wholly in one group
+est <- est %>%
+  group_by(DonorName, RecipientName) %>% mutate(alpha_dyad = mean(alpha_z)) %>% ungroup() %>%
+  mutate(alpha_grp = ntile(alpha_dyad, 3))          # 1 = lowest power, 3 = highest
+
+# the three residual correlations for a given data frame
+rcor <- function(d) {
+  rf <- residuals(lm(flow_log          ~ alpha_z + dR_z + dD_z + Year_f, d))
+  rc <- residuals(lm(ChannelBalance    ~ alpha_z + dR_z + dD_z + Year_f, d))
+  rt <- residuals(lm(preference_margin ~ alpha_z + dR_z + dD_z + Year_f, d))
+  R  <- cor(cbind(rf, rc, rt)); c(fc = R[1,2], ft = R[1,3], ct = R[2,3])
+}
+
+pooled_point <- rcor(est)
+grp_point    <- sapply(1:3, function(g) rcor(droplevels(filter(est, alpha_grp == g))))
+
+set.seed(123); B <- 2000
+est$dyad_id <- paste(est$DonorName, est$RecipientName)
+dyads <- unique(est$dyad_id); drows <- split(seq_len(nrow(est)), est$dyad_id)
+
+bp <- matrix(NA_real_, B, 3, dimnames = list(NULL, names(pooled_point)))
+bg <- array(NA_real_, c(B, 3, 3))
+for (b in 1:B) {
+  idx <- unlist(drows[sample(dyads, length(dyads), TRUE)], use.names = FALSE)
+  db  <- est[idx, ]
+  bp[b, ] <- tryCatch(rcor(db), error = function(e) rep(NA_real_, 3))
+  for (g in 1:3) {
+    sub <- droplevels(db[db$alpha_grp == g, ])
+    bg[b, , g] <- tryCatch(rcor(sub), error = function(e) rep(NA_real_, 3))
+  }
+  if (b %% 200 == 0) cat("resample", b, "\n")
+}
+
+ci <- function(x) quantile(x, c(.025, .975), na.rm = TRUE)
+nm <- c("flow-channel","flow-trade","channel-trade")
+
+cat("\n=== Pooled residual correlations (95% CI) ===\n")
+for (k in 1:3) cat(sprintf("  %-14s % .3f [% .3f, % .3f]%s\n", nm[k], pooled_point[k],
+  ci(bp[,k])[1], ci(bp[,k])[2], ifelse(ci(bp[,k])[1] > 0 | ci(bp[,k])[2] < 0, " *", "")))
+
+cat("\n=== By alpha tercile, with high-low difference ===\n")
+for (k in 1:3) {
+  cat(nm[k], ":\n", sep = "")
+  for (g in 1:3) cat(sprintf("  %-4s % .3f [% .3f, % .3f]\n", c("low","mid","high")[g],
+    grp_point[k,g], ci(bg[,k,g])[1], ci(bg[,k,g])[2]))
+  d <- bg[,k,3] - bg[,k,1]
+  cat(sprintf("  high-low % .3f [% .3f, % .3f]%s\n", grp_point[k,3]-grp_point[k,1],
+    ci(d)[1], ci(d)[2], ifelse(ci(d)[1] > 0 | ci(d)[2] < 0, " *", "")))
+}
+```
+
+### Discussion figures:
+
+```{r}
+res2 <- within(res, {
+  outcome <- sub("_.*", "", coef)        # text before first underscore
+  term    <- sub("^[^_]*_", "", coef)    # text after first underscore
+  sig     <- ci_lo > 0 | ci_hi < 0       # CI excludes zero
+})
+
+out_lab <- c(flow = "Aid flow (log)", chan = "Channel balance",
+             trade = "Trade (pref. margin)")
+```
+
+```{r}
+# Figure 5 — the main system (P1). Faceted by regressor with free x-scales, because the threat points are an order of magnitude larger than α and a shared scale would crush α's interval into invisibility:
+
+res_main <- subset(res2, term %in% c("alpha", "dR", "dD"))
+res_main$outcome <- factor(out_lab[res_main$outcome], levels = out_lab)
+res_main$term <- factor(res_main$term, c("alpha", "dR", "dD"),
+  c("Bargaining power (\u03b1)", "Recipient threat point", "Donor threat point"))
+
+ggplot(res_main, aes(estimate, outcome, colour = sig)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
+  facet_wrap(~ term, scales = "free_x") +
+  scale_y_discrete(limits = rev) +
+  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
+  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+# ggsave(here::here("output/figures/Figure5_system.png"), width = 9, height = 3.2, dpi = 300)
+```
+
+```{r}
+# Figure 6 — the decomposition (P2). Faceted by outcome with a shared x-scale on purpose: that's what makes the point, since commercial dependence is the only marker that crosses to the left of zero, and only in the trade panel, while geopolitical stake on trade visibly dwarfs everything else:
+
+res_dec <- subset(res2, term %in% c("urg", "geo", "comm", "inst"))
+res_dec$outcome <- factor(out_lab[res_dec$outcome], levels = out_lab)
+res_dec$term <- factor(res_dec$term, c("urg", "inst", "comm", "geo"),
+  c("Financial resilience", "Institutional capacity",
+    "Commercial dependence", "Geopolitical stake"))
+
+ggplot(res_dec, aes(estimate, term, colour = sig)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
+  facet_wrap(~ outcome) +
+  scale_y_discrete(limits = rev) +
+  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
+  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+# ggsave(here::here("output/figures/Figure6_decomposition.png"), width = 9, height = 3.4, dpi = 300)
+```
+
+```{r}
+pairs_nm <- c("Flow – Channel", "Flow – Policy", "Channel – Policy")  # bg/grp_point order: fc, ft, ct
+terc_nm  <- c("Low", "Mid", "High")
+
+fig_df <- do.call(rbind, lapply(1:3, function(p) do.call(rbind, lapply(1:3, function(g) {
+  data.frame(pair = pairs_nm[p], terc = terc_nm[g],
+             est = grp_point[p, g],
+             lo  = quantile(bg[, p, g], 0.025, na.rm = TRUE),
+             hi  = quantile(bg[, p, g], 0.975, na.rm = TRUE))
+}))))
+fig_df$pair <- factor(fig_df$pair, levels = pairs_nm)
+fig_df$terc <- factor(fig_df$terc, levels = terc_nm)
+
+ggplot(fig_df, aes(terc, est, group = pair, colour = pair)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_line(position = position_dodge(0.35), linewidth = 0.7) +
+  geom_pointrange(aes(ymin = lo, ymax = hi),
+                  position = position_dodge(0.35), size = 0.7) +
+  scale_colour_manual(values = c("Flow – Channel"   = "#6E9FC6",
+                                 "Flow – Policy"     = "#d6604d",
+                                 "Channel – Policy"  = "#ACD4EC")) +
+  labs(x = "Recipient bargaining-power tercile",
+       y = "Cross-equation residual correlation (95% CI)", colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(axis.title.y = element_text(size = 11),
+        axis.title.x = element_text(size = 11),
+        legend.position = "right", panel.grid.minor = element_blank())
+ ggsave(here::here("output/figures/Figure4_complementarity_gradient.png"), width = 7, height = 4.2, dpi = 300)
+```
+
+### Robustness:
+
+```{r}
+# Zeros / extensive margin (flows). Build the full dyad-year grid and run PPML, keeping zeros:
+
+all_recipients <- unique(CRS_Data$RecipientName)
+grid <- expand.grid(DonorName = c("France","Germany","Japan","United Kingdom","United States"),
+                    RecipientName = all_recipients, Year = as.character(2006:2023),
+                    stringsAsFactors = FALSE)
+CRS_full <- grid %>% left_join(CRS_Data, by = c("DonorName","RecipientName","Year")) %>%
+  mutate(Total_AfT = ifelse(is.na(Total_AfT), 0, Total_AfT), had_aft = as.integer(Total_AfT > 0))
+fixest::fepois(Total_AfT ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
+                 log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
+               cluster = ~dyad_id, data = CRS_full)
+
+# Alternative trade DVs. Re-run the trade equation with preference_margin (donor-specific depth; expect a zero mass — PPML or two-part is cleaner) and with eff_tariff_pk (peak-trimmed).
+# Channel measure. Swap the bounded share for the logit transform.
+# Donor + recipient fixed effects (you can't use full dyad FE — they'd absorb time-invariant BP inputs):
+```
+
+```{r}
+fixest::feols(trade_concession ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
+                log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
+              cluster = ~dyad_id, data = CRS_Data)   # repeat per equation
+
+# Threat-point sensitivity. Drop donor_threat_dyad_lag (replaceability is partly mechanical with flow size); try alternative recipient outside-option measures.
+```
