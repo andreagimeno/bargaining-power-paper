@@ -1,0 +1,22 @@
+# Raw and processed data are not version-controlled (large / third-party files).
+# See README.md for dataset sources and how to regenerate data/processed/.
+/data/raw/*
+!/data/raw/.gitkeep
+/data/processed/*
+!/data/processed/.gitkeep
+
+# Generated figures
+/output/figures/*
+!/output/figures/.gitkeep
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rout
+*_cache/
+*_files/
+
+# macOS
+.DS_Store

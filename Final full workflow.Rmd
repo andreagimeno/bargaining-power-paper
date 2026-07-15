@@ -1,0 +1,4835 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE}
+library(here)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(writexl)
+library(readr)
+library(stringr)
+library(purrr)
+library(lubridate)
+library(psych)
+library(naniar)
+library(performance)
+library(lavaan)
+library(semPlot)
+library(semTools)
+library(mice)
+library(Matrix)
+library(seminr)
+library(systemfit)
+library(ggridges)
+library(DiagrammeR)
+library(DiagrammeRsvg)
+library(magrittr)
+library(xml2)
+library(plm)
+library(multiwayvcov)
+library(sandwich)
+library(MASS)
+library(fixest)
+library(msm)
+library(marginaleffects)
+library(patchwork)
+library(interactions)
+library(RColorBrewer)
+library(effects)
+library(countrycode)
+```
+
+## Building the dataset:
+
+### AfT Data:
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+```
+
+#### AfT flows total:
+
+```{r}
+CRS_2006 <- CRS_2006 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2007 <- CRS_2007 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2008 <- CRS_2008 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2009 <- CRS_2009 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2010 <- CRS_2010 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2011 <- CRS_2011 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2012 <- CRS_2012 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2013 <- CRS_2013 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2014 <- CRS_2014 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2015 <- CRS_2015 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2016 <- CRS_2016 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2017 <- CRS_2017 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2018 <- CRS_2018 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2019 <- CRS_2019 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2020 <- CRS_2020 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2021 <- CRS_2021 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2022 <- CRS_2022 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+
+CRS_2023 <- CRS_2023 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, ChannelCode, SectorName)
+```
+
+```{r}
+AfT_data <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+View(AfT_data)
+```
+
+```{r}
+AfT_data <- AfT_data %>%
+  filter(DonorName %in% c("France", "Germany", "Japan", "United Kingdom", "United States")) %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants")) %>%
+  group_by(DonorName, RecipientName, Year) %>%
+  summarise(
+    USD_Disbursement = sum(USD_Disbursement, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+#### Delivery channel balance:
+
+```{r}
+Channel_data <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+View(Channel_data)
+```
+
+```{r}
+Channel_data <- Channel_data %>%
+  filter(DonorName %in% c("France", "Germany", "Japan", "United Kingdom", "United States")) %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants")) %>%
+  group_by(DonorName, RecipientName, Year, ChannelCode) %>%
+  summarise(
+    USD_Disbursement = sum(USD_Disbursement, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+Channel_data$USD_Disbursement <- as.numeric(Channel_data$USD_Disbursement)
+Channel_data <- Channel_data %>%
+  mutate(ChannelCode = ifelse(is.na(ChannelCode), "NA", as.character(ChannelCode))) %>%
+  pivot_wider(
+    names_from = ChannelCode,
+    values_from = USD_Disbursement,
+    values_fill = 0
+  )
+```
+
+```{r}
+Channel_data <- Channel_data %>%
+  mutate(
+    `Donor channels` = rowSums(across(starts_with(c("11", "22", "61"))), na.rm = TRUE),
+    `Recipient channels` = rowSums(across(starts_with(c("12", "23", "62"))), na.rm = TRUE),
+    `Other channels` = rowSums(across(-c(DonorName, RecipientName, Year,
+                                         starts_with(c("11", "22", "61", 
+                                                       "12", "23", "62")))),
+                               na.rm = TRUE)
+  )
+```
+
+```{r}
+Channel_data <- Channel_data %>%
+  dplyr::select(Year, DonorName, RecipientName, `Donor channels`, `Recipient channels`, `Other channels`)
+```
+
+```{r}
+# `ChannelBalance` as a bounded share for robustness:
+## Zero-handling (when donor channels = 0, the measure conflates "all recipient-delivered" with "large recipient flows"). A bounded share is cleaner and more interpretable; keep the log-ratio as primary and the share as a robustness check, or switch — your call.
+
+Channel_data <- Channel_data %>%
+  mutate(
+    donor_channel_log   = log1p(`Donor channels`),
+    recipient_channel_log = log1p(`Recipient channels`),
+    ChannelBalance = recipient_channel_log - donor_channel_log,
+    channel_share = `Recipient channels` / (`Recipient channels` + `Donor channels`),
+    # optional logit for unbounded support; guard the 0/1 endpoints:
+    channel_share_logit = qlogis(pmin(pmax(channel_share, 0.001), 0.999))
+  )
+```
+
+```{r}
+Channel_data <- Channel_data %>%
+  dplyr::select(Year, DonorName, RecipientName, `Donor channels`, `Recipient channels`, `Other channels`, donor_channel_log, recipient_channel_log, ChannelBalance)
+```
+
+```{r}
+AfT_data$Year <- as.character(AfT_data$Year)
+Channel_data$Year <- as.character(Channel_data$Year)
+
+CRS_Data <- AfT_data %>%
+  left_join(Channel_data, by = c("DonorName", "RecipientName", "Year"))
+
+View(CRS_Data)
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### UN voting data:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+AgreementScores <- read_csv(here::here("data/raw/aft-bargaining-power/AgreementScoresAll_Jun2024.csv"))
+View(AgreementScores)
+```
+
+```{r}
+AgreementScores <- filter(AgreementScores, year >= 2006)
+
+AgreementScores <- AgreementScores %>%
+  filter(ccode1 %in% c(2, 220, 255, 740, 200))
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  mutate(ccode1 = case_when(
+    ccode1 == 2 ~ "United States",
+    ccode1 == 220 ~ "France",
+    ccode1 == 255 ~ "Germany",
+    ccode1 == 740 ~ "Japan",
+    ccode1 == 200 ~ "United Kingdom"
+  ))
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  rename(DonorName = ccode1)
+
+AgreementScores <- AgreementScores %>%
+  rename(RecipientName = ccode2)
+```
+
+```{r message=FALSE, warning=FALSE}
+COW_country_codes <- read_csv(here::here("data/raw/aft-bargaining-power/COW-country-codes.csv"))
+View(COW_country_codes)
+```
+
+```{r}
+COW_country_codes <- COW_country_codes %>%
+  distinct(CCode, .keep_all = TRUE)
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  left_join(COW_country_codes, by = c("RecipientName" = "CCode"))
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  mutate(RecipientName = StateNme) %>%
+  dplyr::select(-StateNme) 
+```
+
+```{r}
+unique_database <- unique(CRS_Data$RecipientName)
+unique_agreement <- unique(AgreementScores$RecipientName)
+
+in_database_not_in_agreement <- setdiff(unique_database, unique_agreement)
+
+in_agreement_not_in_database <- setdiff(unique_agreement, unique_database)
+
+print("Values in Database but not in AgreementScores:")
+print(in_database_not_in_agreement)
+
+print("Values in AgreementScores but not in Database:")
+print(in_agreement_not_in_database)
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  mutate(RecipientName = case_when(
+    RecipientName == "Antigua & Barbuda" ~ "Antigua and Barbuda",
+    RecipientName == "Cape Verde" ~ "Cabo Verde",
+    RecipientName == "St. Lucia" ~ "Saint Lucia",
+    RecipientName == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    RecipientName == "Syria" ~ "Syrian Arab Republic",
+    RecipientName == "Turkey" ~ "Türkiye",
+    RecipientName == "China" ~ "China (People's Republic of)",
+    RecipientName == "Ivory Coast" ~ "Côte d'Ivoire",
+    RecipientName == "North Korea" ~ "Democratic People's Republic of Korea",
+    RecipientName == "St. Kitts and Nevis" ~ "Saint Kitts and Nevis",
+    RecipientName == "St. Helena" ~ "Saint Helena",
+    RecipientName == "East Timor" ~ "Timor-Leste",
+    RecipientName == "Swaziland" ~ "Eswatini",
+    RecipientName == "Federated States of Micronesia" ~ "Micronesia",
+    RecipientName == "Vietnam" ~ "Viet Nam",
+    RecipientName == "Macedonia" ~ "North Macedonia",
+    RecipientName == "Laos" ~ "Lao People's Democratic Republic",
+    TRUE ~ RecipientName
+  ))
+```
+
+```{r}
+AgreementScores <- AgreementScores %>%
+  dplyr::select(-c(...1, session.x, NVotesAll.x, NVotesAll.y, StateAbb, IdealPointAll.x, IdealPointAll.y))
+```
+
+```{r}
+AgreementScores$year <- as.character(AgreementScores$year)
+CRS_Data$Year <- as.character(CRS_Data$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(AgreementScores, by = c("RecipientName", "DonorName", "Year"="year"))
+```
+
+### Colonial history:
+
+```{r}
+CRS_Data$COL_FR <- ifelse(CRS_Data$RecipientName == "Algeria", "62", 
+                     ifelse(CRS_Data$RecipientName == "Benin", "60",
+                     ifelse(CRS_Data$RecipientName == "Burkina Faso", "60",
+                     ifelse(CRS_Data$RecipientName == "Cambodia", "53", 
+                     ifelse(CRS_Data$RecipientName == "Cameroon", "60",
+                     ifelse(CRS_Data$RecipientName == "Central African Republic", "60", 
+                     ifelse(CRS_Data$RecipientName == "Chad", "60",
+                     ifelse(CRS_Data$RecipientName == "Comoros", "75",
+                     ifelse(CRS_Data$RecipientName == "Congo", "60",
+                     ifelse(CRS_Data$RecipientName == "Côte d'Ivoire", "60",
+                      ifelse(CRS_Data$RecipientName == "Djibouti", "77",
+                      ifelse(CRS_Data$RecipientName == "Gabon", "60",
+                      ifelse(CRS_Data$RecipientName == "Guinea", "58",
+                      ifelse(CRS_Data$RecipientName == "Lao People's Democratic Republic", "53",
+                      ifelse(CRS_Data$RecipientName == "Lebanon", "43",
+                      ifelse(CRS_Data$RecipientName == "Madagascar", "60",
+                      ifelse(CRS_Data$RecipientName == "Mali", "60",
+                      ifelse(CRS_Data$RecipientName == "Mauritania", "60",
+                      ifelse(CRS_Data$RecipientName == "Morocco", "56",
+                      ifelse(CRS_Data$RecipientName == "Niger", "60",
+                      ifelse(CRS_Data$RecipientName == "Senegal", "60",
+                      ifelse(CRS_Data$RecipientName == "Syrian Arab Republic", "46",
+                      ifelse(CRS_Data$RecipientName == "Togo", "60",
+                      ifelse(CRS_Data$RecipientName == "Tunisia", "56",
+                      ifelse(CRS_Data$RecipientName == "Viet Nam", "45", "0")))))))))))))))))))))))))
+```
+
+```{r}
+CRS_Data$COL_UK <- ifelse(CRS_Data$RecipientName == "Afghanistan", "19", 
+                     ifelse(CRS_Data$RecipientName == "Antigua and Barbuda", "81",
+                     ifelse(CRS_Data$RecipientName == "Bahrain", "71",
+                     ifelse(CRS_Data$RecipientName == "Barbados", "66",
+                     ifelse(CRS_Data$RecipientName == "Belize", "81",
+                     ifelse(CRS_Data$RecipientName == "Botswana", "66",
+                     ifelse(CRS_Data$RecipientName == "Dominica", "78",
+                     ifelse(CRS_Data$RecipientName == "Egypt", "56",
+                     ifelse(CRS_Data$RecipientName == "Eswatini", "68",
+                     ifelse(CRS_Data$RecipientName == "Fiji", "70",
+                     ifelse(CRS_Data$RecipientName == "Gambia", "65",
+                     ifelse(CRS_Data$RecipientName == "Ghana", "57",
+                     ifelse(CRS_Data$RecipientName == "Grenada", "74",
+                     ifelse(CRS_Data$RecipientName == "Guyana", "66",
+                     ifelse(CRS_Data$RecipientName == "India", "47",
+                     ifelse(CRS_Data$RecipientName == "Iraq", "32",
+                     ifelse(CRS_Data$RecipientName == "Jamaica", "62",
+                     ifelse(CRS_Data$RecipientName == "Jordan", "46",
+                     ifelse(CRS_Data$RecipientName == "Kenya", "63",
+                     ifelse(CRS_Data$RecipientName == "Kiribati", "79",
+                     ifelse(CRS_Data$RecipientName == "Lesotho", "66",
+                     ifelse(CRS_Data$RecipientName == "Malawi", "64",
+                     ifelse(CRS_Data$RecipientName == "Malaysia", "57",
+                     ifelse(CRS_Data$RecipientName == "Maldives", "65",
+                     ifelse(CRS_Data$RecipientName == "Mauritius", "68",
+                     ifelse(CRS_Data$RecipientName == "Nauru", "68",
+                     ifelse(CRS_Data$RecipientName == "Nigeria", "60",
+                     ifelse(CRS_Data$RecipientName == "Pakistan", "47",
+                     ifelse(CRS_Data$RecipientName == "Saint Kitts and Nevis", "83",
+                     ifelse(CRS_Data$RecipientName == "Saint Lucia", "79",
+                     ifelse(CRS_Data$RecipientName == "Saint Vincent and the Grenadines", "79",
+                     ifelse(CRS_Data$RecipientName == "Seychelles", "76",
+                     ifelse(CRS_Data$RecipientName == "Sierra Leone", "61",
+                     ifelse(CRS_Data$RecipientName == "Solomon Islands", "78",
+                     ifelse(CRS_Data$RecipientName == "Somalia", "60",
+                     ifelse(CRS_Data$RecipientName == "South Africa", "94",
+                     ifelse(CRS_Data$RecipientName == "Sri Lanka", "48",
+                     ifelse(CRS_Data$RecipientName == "Sudan", "56",
+                     ifelse(CRS_Data$RecipientName == "Tanzania", "63",
+                     ifelse(CRS_Data$RecipientName == "Tonga", "70",
+                     ifelse(CRS_Data$RecipientName == "Trinidad and Tobago", "62",
+                     ifelse(CRS_Data$RecipientName == "Tuvalu", "78",
+                     ifelse(CRS_Data$RecipientName == "Uganda", "62",
+                     ifelse(CRS_Data$RecipientName == "Vanuatu", "80",
+                     ifelse(CRS_Data$RecipientName == "Yemen", "67",
+                     ifelse(CRS_Data$RecipientName == "Zambia", "64",
+                     ifelse(CRS_Data$RecipientName == "Zimbabwe", "80",
+                     ifelse(CRS_Data$RecipientName == "Burma", "48", "0"))))))))))))))))))))))))))))))))))))))))))))))))
+```
+
+```{r}
+CRS_Data$COL_US <- ifelse(CRS_Data$RecipientName == "Cuba", "2", 
+                     ifelse(CRS_Data$RecipientName == "Marshall Islands", "86",
+                     ifelse(CRS_Data$RecipientName == "Micronesia", "86",
+                     ifelse(CRS_Data$RecipientName == "Palau", "94",
+                     ifelse(CRS_Data$RecipientName == "Philippines", "46", "0")))))
+```
+
+```{r}
+CRS_Data$COL_JP <- ifelse(CRS_Data$RecipientName == "Democratic People's Republic of Korea", "45", "0")
+```
+
+### Geographical proximity:
+
+```{r}
+library(readxl)
+dist_cepii_2 <- read_excel(here::here("data/raw/aft-bargaining-power/dist_cepii 2.xls"))
+View(dist_cepii_2)
+```
+
+```{r}
+dist_cepii_2 <- dist_cepii_2 %>%
+  rename(RecipientName = iso_o)
+
+dist_cepii_2 <- dist_cepii_2 %>%
+  rename(DonorName = iso_d)
+```
+
+```{r}
+dist_cepii_2_filtered <- dist_cepii_2 %>%
+  filter(DonorName %in% c('DEU', 'FRA', 'GBR', 'USA', 'JPN'))
+View(dist_cepii_2_filtered)
+```
+
+```{r}
+dist_cepii_2_filtered$DonorName <- ifelse(dist_cepii_2_filtered$DonorName == "DEU", "Germany",
+                                   ifelse(dist_cepii_2_filtered$DonorName == "FRA", "France",
+                                   ifelse(dist_cepii_2_filtered$DonorName == "USA", "United States",
+                                   ifelse(dist_cepii_2_filtered$DonorName == "GBR", "United Kingdom",
+                                   ifelse(dist_cepii_2_filtered$DonorName == "JPN", "Japan", dist_cepii_2_filtered$DonorName)))))
+```
+
+```{r}
+dist_cepii_2_filtered <- dist_cepii_2_filtered %>%
+  dplyr::select(RecipientName, DonorName, distwces)
+```
+
+```{r}
+unique_database <- unique(CRS_Data$RecipientName)
+unique_dist <- unique(dist_cepii_2_filtered$RecipientName)
+
+in_database_not_in_dist <- setdiff(unique_database, unique_dist)
+
+print("Values in Database but not in Distance Data:")
+print(in_database_not_in_dist)
+```
+
+```{r}
+dist_cepii_2_filtered <- dist_cepii_2_filtered %>%
+  mutate(RecipientName = case_when(
+    RecipientName == "AFG" ~ "Afghanistan",
+    RecipientName == "ALB" ~ "Albania",
+    RecipientName == "DZA" ~ "Algeria",
+    RecipientName == "AGO" ~ "Angola",
+    RecipientName == "ARG" ~ "Argentina",
+    RecipientName == "ARM" ~ "Armenia",
+    RecipientName == "AZE" ~ "Azerbaijan",
+    RecipientName == "BGD" ~ "Bangladesh",
+    RecipientName == "BLR" ~ "Belarus",
+    RecipientName == "BEN" ~ "Benin",
+    RecipientName == "BOL" ~ "Bolivia",
+    RecipientName == "BIH" ~ "Bosnia and Herzegovina",
+    RecipientName == "BWA" ~ "Botswana",
+    RecipientName == "BRA" ~ "Brazil",
+    RecipientName == "BFA" ~ "Burkina Faso",
+    RecipientName == "BDI" ~ "Burundi",
+    RecipientName == "CPV" ~ "Cabo Verde",
+    RecipientName == "KHM" ~ "Cambodia",
+    RecipientName == "CMR" ~ "Cameroon",
+    RecipientName == "CAF" ~ "Central African Republic",
+    RecipientName == "TCD" ~ "Chad",
+    RecipientName == "CHL" ~ "Chile",
+    RecipientName == "CHN" ~ "China (People's Republic of)",
+    RecipientName == "COL" ~ "Colombia",
+    RecipientName == "COM" ~ "Comoros",
+    RecipientName == "COG" ~ "Congo",
+    RecipientName == "COK" ~ "Cook Islands",
+    RecipientName == "CRI" ~ "Costa Rica",
+    RecipientName == "HRV" ~ "Croatia",
+    RecipientName == "CUB" ~ "Cuba",
+    RecipientName == "CIV" ~ "Côte d'Ivoire",
+    RecipientName == "PRK" ~ "Democratic People's Republic of Korea",
+    RecipientName == "ZAR" ~ "Democratic Republic of the Congo",
+    RecipientName == "DJI" ~ "Djibouti",
+    RecipientName == "DMA" ~ "Dominica",
+    RecipientName == "DOM" ~ "Dominican Republic",
+    RecipientName == "ECU" ~ "Ecuador",
+    RecipientName == "EGY" ~ "Egypt",
+    RecipientName == "SLV" ~ "El Salvador",
+    RecipientName == "GNQ" ~ "Equatorial Guinea",
+    RecipientName == "SWZ" ~ "Eswatini",
+    RecipientName == "ETH" ~ "Ethiopia",
+    RecipientName == "FJI" ~ "Fiji",
+    RecipientName == "GAB" ~ "Gabon",
+    RecipientName == "GMB" ~ "Gambia",
+    RecipientName == "GEO" ~ "Georgia",
+    RecipientName == "GHA" ~ "Ghana",
+    RecipientName == "GRD" ~ "Grenada",
+    RecipientName == "GTM" ~ "Guatemala",
+    RecipientName == "GIN" ~ "Guinea",
+    RecipientName == "GNB" ~ "Guinea-Bissau",
+    RecipientName == "HTI" ~ "Haiti",
+    RecipientName == "HND" ~ "Honduras",
+    RecipientName == "IND" ~ "India",
+    RecipientName == "IDN" ~ "Indonesia",
+    RecipientName == "IRN" ~ "Iran",
+    RecipientName == "IRQ" ~ "Iraq",
+    RecipientName == "JAM" ~ "Jamaica",
+    RecipientName == "JOR" ~ "Jordan",
+    RecipientName == "KAZ" ~ "Kazakhstan",
+    RecipientName == "KEN" ~ "Kenya",
+    RecipientName == "KGZ" ~ "Kyrgyzstan",
+    RecipientName == "LAO" ~ "Lao People's Democratic Republic",
+    RecipientName == "LBN" ~ "Lebanon",
+    RecipientName == "LSO" ~ "Lesotho",
+    RecipientName == "LBR" ~ "Liberia",
+    RecipientName == "LBY" ~ "Libya",
+    RecipientName == "MDG" ~ "Madagascar",
+    RecipientName == "MWI" ~ "Malawi",
+    RecipientName == "MYS" ~ "Malaysia",
+    RecipientName == "MDV" ~ "Maldives",
+    RecipientName == "MLI" ~ "Mali",
+    RecipientName == "MRT" ~ "Mauritania",
+    RecipientName == "MUS" ~ "Mauritius",
+    RecipientName == "MEX" ~ "Mexico",
+    RecipientName == "MDA" ~ "Moldova",
+    RecipientName == "MNG" ~ "Mongolia",
+    RecipientName == "YUG" ~ "Montenegro",
+    RecipientName == "MAR" ~ "Morocco",
+    RecipientName == "MOZ" ~ "Mozambique",
+    RecipientName == "MMR" ~ "Myanmar",
+    RecipientName == "NAM" ~ "Namibia",
+    RecipientName == "NPL" ~ "Nepal",
+    RecipientName == "NIC" ~ "Nicaragua",
+    RecipientName == "NER" ~ "Niger",
+    RecipientName == "NGA" ~ "Nigeria",
+    RecipientName == "MKD" ~ "North Macedonia",
+    RecipientName == "PAK" ~ "Pakistan",
+    RecipientName == "PAN" ~ "Panama",
+    RecipientName == "PNG" ~ "Papua New Guinea",
+    RecipientName == "PRY" ~ "Paraguay",
+    RecipientName == "PER" ~ "Peru",
+    RecipientName == "PHL" ~ "Philippines",
+    RecipientName == "RWA" ~ "Rwanda",
+    RecipientName == "LCA" ~ "Saint Lucia",
+    RecipientName == "VCT" ~ "Saint Vincent and the Grenadines",
+    RecipientName == "STP" ~ "Sao Tome and Principe",
+    RecipientName == "SEN" ~ "Senegal",
+    RecipientName == "SYC" ~ "Seychelles",
+    RecipientName == "SLE" ~ "Sierra Leone",
+    RecipientName == "SOM" ~ "Somalia",
+    RecipientName == "ZAF" ~ "South Africa",
+    RecipientName == "LKA" ~ "Sri Lanka",
+    RecipientName == "SDN" ~ "Sudan",
+    RecipientName == "SUR" ~ "Suriname",
+    RecipientName == "SYR" ~ "Syrian Arab Republic",
+    RecipientName == "TJK" ~ "Tajikistan",
+    RecipientName == "TZA" ~ "Tanzania",
+    RecipientName == "THA" ~ "Thailand",
+    RecipientName == "TGO" ~ "Togo",
+    RecipientName == "TON" ~ "Tonga",
+    RecipientName == "TTO" ~ "Trinidad and Tobago",
+    RecipientName == "TUN" ~ "Tunisia",
+    RecipientName == "TUR" ~ "Türkiye",
+    RecipientName == "UGA" ~ "Uganda",
+    RecipientName == "UKR" ~ "Ukraine",
+    RecipientName == "URY" ~ "Uruguay",
+    RecipientName == "UZB" ~ "Uzbekistan",
+    RecipientName == "VUT" ~ "Vanuatu",
+    RecipientName == "VEN" ~ "Venezuela",
+    RecipientName == "VNM" ~ "Viet Nam",
+    RecipientName == "WLF" ~ "Wallis and Futuna",
+    RecipientName == "PAL" ~ "West Bank and Gaza Strip",
+    RecipientName == "YEM" ~ "Yemen",
+    RecipientName == "ZMB" ~ "Zambia",
+    RecipientName == "ZWE" ~ "Zimbabwe",
+    RecipientName == "ATG" ~ "Antigua and Barbuda",
+    RecipientName == "BRB" ~ "Barbados",
+    RecipientName == "BLZ" ~ "Belize",
+    RecipientName == "BTN" ~ "Bhutan",
+    RecipientName == "ERI" ~ "Eritrea",
+    RecipientName == "GUY" ~ "Guyana",
+    RecipientName == "MHL" ~ "Marshall Islands",
+    RecipientName == "FSM" ~ "Micronesia",
+    RecipientName == "KNA" ~ "Saint Kitts and Nevis",
+    RecipientName == "WSM" ~ "Samoa",
+    RecipientName == "SLB" ~ "Solomon Islands",
+    RecipientName == "TMP" ~ "Timor-Leste",
+    RecipientName == "TKM" ~ "Turkmenistan",
+    RecipientName == "KIR" ~ "Kiribati",
+    RecipientName == "NRU" ~ "Nauru",
+    RecipientName == "NIU" ~ "Niue",
+    RecipientName == "OMN" ~ "Oman",
+    RecipientName == "PLW" ~ "Palau",
+    RecipientName == "SAU" ~ "Saudi Arabia",
+    RecipientName == "TUV" ~ "Tuvalu",
+    RecipientName == "AIA" ~ "Anguilla",
+    RecipientName == "SHN" ~ "Saint Helena",
+    RecipientName == "TCA" ~ "Turks and Caicos Islands",
+    RecipientName == "MSR" ~ "Montserrat",
+    TRUE ~ RecipientName
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(dist_cepii_2_filtered, by = c("RecipientName", "DonorName"))
+```
+
+```{r}
+# Filling in values for Serbia since in dataset Serbia and Montenegro are together.
+
+montenegro_dist <- CRS_Data %>%
+  filter(RecipientName == "Montenegro") %>%
+  distinct(DonorName, distwces)
+
+CRS_Data <- CRS_Data %>%
+  left_join(
+    montenegro_dist,
+    by = "DonorName",
+    suffix = c("", "_montenegro")
+  ) %>%
+  mutate(
+    distwces = ifelse(
+      RecipientName == "Serbia" & is.na(distwces),
+      distwces_montenegro,
+      distwces
+    )
+  ) %>%
+  dplyr::select(-distwces_montenegro)
+
+```
+
+### Cost of trade:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+Cost_of_trade <- read_csv(here::here("data/raw/aft-bargaining-power/Cost of trade.csv"))
+View(Cost_of_trade)
+```
+
+```{r}
+Cost_of_trade <- Cost_of_trade %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, OBS_VALUE)
+```
+
+```{r}
+Cost_of_trade <- Cost_of_trade %>%
+  rename(RecipientName = `Reference area`)
+
+Cost_of_trade <- Cost_of_trade %>%
+  rename(DonorName = `Counterpart area`)
+
+Cost_of_trade <- Cost_of_trade %>%
+  rename(Year = TIME_PERIOD)
+
+Cost_of_trade <- Cost_of_trade %>%
+  rename(Cost_Trade = OBS_VALUE)
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+Cost_of_trade$Year <- as.character(Cost_of_trade$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Cost_of_trade, by = c("RecipientName", "DonorName", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Merch exports to the world:
+
+#### Recipients:
+
+```{r message=FALSE, warning=FALSE}
+World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods exports to the world.csv"))
+View(World_exports)
+```
+
+```{r}
+World_exports <- World_exports %>%
+  mutate(world_exp = OBS_VALUE)
+
+World_exports <- World_exports %>%
+  filter(Adjustment %in% "Balanced value")
+
+World_exports <- World_exports %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, world_exp)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_exp <- unique(World_exports$`Reference area`)
+
+in_merged_not_in_exp <- setdiff(unique_merged, unique_exp)
+in_exp_not_in_merged <- setdiff(unique_exp, unique_merged)
+
+print("Values in merged data but not in export data:")
+print(in_merged_not_in_exp)
+
+print("Values in export data but not in merged data:")
+print(in_exp_not_in_merged)
+```
+
+```{r}
+World_exports <- World_exports %>%
+  mutate(`Reference area` = case_when(
+    `Reference area` == "China (People’s Republic of)" ~ "China (People's Republic of)",
+    `Reference area` == "Côte d’Ivoire" ~ "Côte d'Ivoire",
+    `Reference area` == "Democratic People’s Republic of Korea" ~ "Democratic People's Republic of Korea",
+    `Reference area` == "Lao People’s Democratic Republic" ~ "Lao People's Democratic Republic",
+    `Reference area` == "Palestinian Authority or West Bank and Gaza Strip" ~ "West Bank and Gaza Strip",
+    TRUE ~ `Reference area`
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+World_exports$TIME_PERIOD <- as.numeric(World_exports$TIME_PERIOD)
+
+World_exports <- World_exports %>%
+  dplyr::select(-`Counterpart area`)
+
+CRS_Data <- CRS_Data %>%
+            left_join(World_exports, by = c("RecipientName" = "Reference area", "Year" = "TIME_PERIOD"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+#### Donors:
+
+```{r message=FALSE, warning=FALSE}
+World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods exports to the world.csv"))
+View(World_exports)
+```
+
+```{r}
+World_exports <- World_exports %>%
+  mutate(world_exp = OBS_VALUE)
+
+World_exports <- World_exports %>%
+  filter(Adjustment %in% "Balanced value")
+
+World_exports <- World_exports %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, world_exp)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_exp <- unique(World_exports$`Reference area`)
+
+in_merged_not_in_exp <- setdiff(unique_merged, unique_exp)
+in_exp_not_in_merged <- setdiff(unique_exp, unique_merged)
+
+print("Values in merged data but not in export data:")
+print(in_merged_not_in_exp)
+
+print("Values in export data but not in merged data:")
+print(in_exp_not_in_merged)
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+World_exports$TIME_PERIOD <- as.numeric(World_exports$TIME_PERIOD)
+
+World_exports <- World_exports %>%
+  dplyr::select(-`Counterpart area`)
+
+World_exports <- World_exports %>%
+  rename(world_exp_donors = world_exp)
+
+CRS_Data <- CRS_Data %>%
+            left_join(World_exports, by = c("DonorName" = "Reference area", "Year" = "TIME_PERIOD"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Bilateral trade in services:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+TradeServices <- read_csv(here::here("data/raw/aft-bargaining-power/OECD-WTO_BATIS_BPM6_December2025_bulk.csv"))
+View(TradeServices)
+```
+
+```{r}
+print(unique(TradeServices$Partner))
+```
+
+```{r}
+TradeServices <- TradeServices %>%
+  filter(Partner %in% c("US", "GB", "JP", "FR", "DE"))
+```
+
+```{r}
+TradeServices <- TradeServices %>%
+  filter(Item_code == "S")
+```
+
+```{r}
+TradeServices <- TradeServices %>%
+  dplyr::select(-c(type_Reporter, type_Partner, Item_code, type_Item, Reported_value, Final_value_methodology, Balanced_value))
+```
+
+```{r}
+TradeServices_wide <- TradeServices %>%
+  pivot_wider(
+    id_cols = c(Reporter, Partner, Year),
+    names_from = Flow,
+    values_from = Final_value,
+    names_prefix = "Final_"
+  )
+
+View(TradeServices_wide)
+```
+
+```{r}
+print(unique(TradeServices_wide$Reporter))
+```
+
+```{r}
+TradeServices_wide <- TradeServices_wide %>%
+  mutate(
+    Reporter = case_when(
+      Reporter == "AF" ~ "Afghanistan",
+      Reporter == "AO" ~ "Angola",
+      Reporter == "AL" ~ "Albania",
+      Reporter == "AR" ~ "Argentina",
+      Reporter == "AM" ~ "Armenia",
+      Reporter == "AG" ~ "Antigua and Barbuda",
+      Reporter == "AZ" ~ "Azerbaijan",
+      Reporter == "BI" ~ "Burundi",
+      Reporter == "BJ" ~ "Benin",
+      Reporter == "BF" ~ "Burkina Faso",
+      Reporter == "BD" ~ "Bangladesh",
+      Reporter == "BH" ~ "Bahrain",
+      Reporter == "BA" ~ "Bosnia and Herzegovina",
+      Reporter == "BY" ~ "Belarus",
+      Reporter == "BZ" ~ "Belize",
+      Reporter == "BO" ~ "Bolivia",
+      Reporter == "BR" ~ "Brazil",
+      Reporter == "BB" ~ "Barbados",
+      Reporter == "BT" ~ "Bhutan",
+      Reporter == "BW" ~ "Botswana",
+      Reporter == "CF" ~ "Central African Republic",
+      Reporter == "CL" ~ "Chile",
+      Reporter == "CN" ~ "China (People's Republic of)",
+      Reporter == "CI" ~ "Côte d'Ivoire",
+      Reporter == "CM" ~ "Cameroon",
+      Reporter == "CD" ~ "Democratic Republic of the Congo",
+      Reporter == "CG" ~ "Congo",
+      Reporter == "CO" ~ "Colombia",
+      Reporter == "KM" ~ "Comoros",
+      Reporter == "CV" ~ "Cabo Verde",
+      Reporter == "CR" ~ "Costa Rica",
+      Reporter == "DJ" ~ "Djibouti",
+      Reporter == "DM" ~ "Dominica", 
+      Reporter == "DO" ~ "Dominican Republic",
+      Reporter == "DZ" ~ "Algeria",
+      Reporter == "EC" ~ "Ecuador",
+      Reporter == "EG" ~ "Egypt",
+      Reporter == "CU" ~ "Cuba",
+      Reporter == "ER" ~ "Eritrea",
+      Reporter == "ET" ~ "Ethiopia",
+      Reporter == "FJ" ~ "Fiji",
+      Reporter == "GA" ~ "Gabon",
+      Reporter == "GE" ~ "Georgia",
+      Reporter == "GH" ~ "Ghana",
+      Reporter == "GN" ~ "Guinea",
+      Reporter == "GM" ~ "Gambia",
+      Reporter == "GW" ~ "Guinea-Bissau",
+      Reporter == "GQ" ~ "Equatorial Guinea",
+      Reporter == "GD" ~ "Grenada",
+      Reporter == "GT" ~ "Guatemala",
+      Reporter == "GY" ~ "Guyana",
+      Reporter == "HN" ~ "Honduras",
+      Reporter == "HT" ~ "Haiti",
+      Reporter == "HR" ~ "Croatia",
+      Reporter == "ID" ~ "Indonesia",
+      Reporter == "IN" ~ "India",
+      Reporter == "IR" ~ "Iran",
+      Reporter == "IQ" ~ "Iraq",
+      Reporter == "JM" ~ "Jamaica",
+      Reporter == "JO" ~ "Jordan",
+      Reporter == "KZ" ~ "Kazakhstan",
+      Reporter == "KE" ~ "Kenya",
+      Reporter == "KG" ~ "Kyrgyzstan",
+      Reporter == "KH" ~ "Cambodia",
+      Reporter == "KI" ~ "Kiribati",
+      Reporter == "888" ~ "Kosovo",
+      Reporter == "KN" ~ "Saint Kitts and Nevis",
+      Reporter == "LA" ~ "Lao People's Democratic Republic",
+      Reporter == "LB" ~ "Lebanon",
+      Reporter == "LR" ~ "Liberia",
+      Reporter == "LY" ~ "Libya",
+      Reporter == "LC" ~ "Saint Lucia",
+      Reporter == "LK" ~ "Sri Lanka",
+      Reporter == "LS" ~ "Lesotho",
+      Reporter == "MA" ~ "Morocco",
+      Reporter == "MD" ~ "Moldova",
+      Reporter == "MG" ~ "Madagascar",
+      Reporter == "MV" ~ "Maldives",
+      Reporter == "MX" ~ "Mexico",
+      Reporter == "MK" ~ "North Macedonia",
+      Reporter == "ML" ~ "Mali",
+      Reporter == "MM" ~ "Myanmar",
+      Reporter == "ME" ~ "Montenegro",
+      Reporter == "MN" ~ "Mongolia",
+      Reporter == "MZ" ~ "Mozambique",
+      Reporter == "MR" ~ "Mauritania",
+      Reporter == "MU" ~ "Mauritius",
+      Reporter == "MW" ~ "Malawi",
+      Reporter == "MY" ~ "Malaysia",
+      Reporter == "NA" ~ "Namibia",
+      Reporter == "NE" ~ "Niger",
+      Reporter == "NG" ~ "Nigeria",
+      Reporter == "NI" ~ "Nicaragua",
+      Reporter == "NP" ~ "Nepal",
+      Reporter == "OM" ~ "Oman",
+      Reporter == "PK" ~ "Pakistan",
+      Reporter == "PA" ~ "Panama",
+      Reporter == "PE" ~ "Peru",
+      Reporter == "PH" ~ "Philippines",
+      Reporter == "PG" ~ "Papua New Guinea",
+      Reporter == "KP" ~ "Democratic People's Republic of Korea",
+      Reporter == "PY" ~ "Paraguay",
+      Reporter == "RW" ~ "Rwanda",
+      Reporter == "SA" ~ "Saudi Arabia",
+      Reporter == "SD" ~ "Sudan",
+      Reporter == "SN" ~ "Senegal",
+      Reporter == "SB" ~ "Solomon Islands",
+      Reporter == "SL" ~ "Sierra Leone",
+      Reporter == "SV" ~ "El Salvador",
+      Reporter == "SO" ~ "Somalia",
+      Reporter == "ST" ~ "Sao Tome and Principe",
+      Reporter == "SR" ~ "Suriname",
+      Reporter == "SZ" ~ "Eswatini",
+      Reporter == "SC" ~ "Seychelles",
+      Reporter == "SY" ~ "Syrian Arab Republic",
+      Reporter == "TD" ~ "Chad",
+      Reporter == "TG" ~ "Togo",
+      Reporter == "TH" ~ "Thailand",
+      Reporter == "TJ" ~ "Tajikistan",
+      Reporter == "TM" ~ "Turkmenistan",
+      Reporter == "TL" ~ "Timor-Leste",
+      Reporter == "TO" ~ "Tonga",
+      Reporter == "TT" ~ "Trinidad and Tobago",
+      Reporter == "TN" ~ "Tunisia",
+      Reporter == "TR" ~ "Türkiye",
+      Reporter == "TV" ~ "Tuvalu",
+      Reporter == "TZ" ~ "Tanzania",
+      Reporter == "UG" ~ "Uganda",
+      Reporter == "UA" ~ "Ukraine",
+      Reporter == "UY" ~ "Uruguay",
+      Reporter == "UZ" ~ "Uzbekistan",
+      Reporter == "VC" ~ "Saint Vincent and the Grenadines",
+      Reporter == "VE" ~ "Venezuela",
+      Reporter == "VN" ~ "Viet Nam",
+      Reporter == "VU" ~ "Vanuatu",
+      Reporter == "WS" ~ "Samoa",
+      Reporter == "YE" ~ "Yemen",
+      Reporter == "ZA" ~ "South Africa",
+      Reporter == "ZM" ~ "Zambia",
+      Reporter == "ZW" ~ "Zimbabwe",
+      TRUE ~ Reporter
+    ),
+    Partner = case_when(
+      Partner == "DE" ~ "Germany",
+      Partner == "FR" ~ "France",
+      Partner == "US" ~ "United States",
+      Partner == "GB" ~ "United Kingdom",
+      Partner == "JP" ~ "Japan",
+      TRUE ~ Partner
+    )
+  )
+```
+
+```{r}
+TradeServices_wide <- TradeServices_wide %>%
+  rename(RecipientName = Reporter)
+
+TradeServices_wide <- TradeServices_wide %>%
+  rename(DonorName = Partner)
+
+TradeServices_wide <- TradeServices_wide %>%
+  rename(FinalEXP = Final_X)
+
+TradeServices_wide <- TradeServices_wide %>%
+  rename(FinalIMP = Final_M)
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+TradeServices_wide$Year <- as.numeric(TradeServices_wide$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(TradeServices_wide, by = c("RecipientName", "DonorName", "Year"))
+```
+
+### Bilateral trade in goods:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+TradeGoods <- read_csv(here::here("data/raw/aft-bargaining-power/Bilateral trade in goods (recipient exports).csv"))
+View(TradeGoods)
+```
+
+```{r}
+TradeGoods <- TradeGoods %>%
+  mutate(good_exp = OBS_VALUE)
+
+TradeGoods <- TradeGoods %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, good_exp)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_exp <- unique(TradeGoods$`Reference area`)
+
+in_merged_not_in_exp <- setdiff(unique_merged, unique_exp)
+in_exp_not_in_merged <- setdiff(unique_exp, unique_merged)
+
+print("Values in merged data but not in export data:")
+print(in_merged_not_in_exp)
+
+print("Values in export data but not in merged data:")
+print(in_exp_not_in_merged)
+```
+
+```{r}
+TradeGoods <- TradeGoods %>%
+  mutate(`Reference area` = case_when(
+    `Reference area` == "China (People’s Republic of)" ~ "China (People's Republic of)",
+    `Reference area` == "Côte d’Ivoire" ~ "Côte d'Ivoire",
+    `Reference area` == "Democratic People’s Republic of Korea" ~ "Democratic People's Republic of Korea",
+    `Reference area` == "Lao People’s Democratic Republic" ~ "Lao People's Democratic Republic",
+    `Reference area` == "Palestinian Authority or West Bank and Gaza Strip" ~ "West Bank and Gaza Strip",
+    TRUE ~ `Reference area`
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+TradeGoods$TIME_PERIOD <- as.numeric(TradeGoods$TIME_PERIOD)
+
+CRS_Data <- CRS_Data %>%
+            left_join(TradeGoods, by = c("RecipientName" = "Reference area", "DonorName" = "Counterpart area", "Year" = "TIME_PERIOD"))
+```
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+TradeGoods2 <- read_csv(here::here("data/raw/aft-bargaining-power/Bilateral trade in goods (recipient imports).csv"))
+View(TradeGoods2)
+```
+
+```{r}
+TradeGoods2 <- TradeGoods2 %>%
+  mutate(good_imp = OBS_VALUE)
+
+TradeGoods2 <- TradeGoods2 %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, good_imp)
+```
+
+```{r}
+TradeGoods2 <- TradeGoods2 %>%
+  mutate(`Reference area` = case_when(
+    `Reference area` == "China (People’s Republic of)" ~ "China (People's Republic of)",
+    `Reference area` == "Côte d’Ivoire" ~ "Côte d'Ivoire",
+    `Reference area` == "Democratic People’s Republic of Korea" ~ "Democratic People's Republic of Korea",
+    `Reference area` == "Lao People’s Democratic Republic" ~ "Lao People's Democratic Republic",
+    `Reference area` == "Palestinian Authority or West Bank and Gaza Strip" ~ "West Bank and Gaza Strip",
+    TRUE ~ `Reference area`
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+TradeGoods2$TIME_PERIOD <- as.numeric(TradeGoods2$TIME_PERIOD)
+
+CRS_Data <- CRS_Data %>%
+            left_join(TradeGoods2, by = c("DonorName" = "Reference area", "RecipientName" = "Counterpart area", "Year" = "TIME_PERIOD"))
+```
+
+```{r}
+CRS_Data$expshare_recipient <- CRS_Data$good_exp/CRS_Data$world_exp #Recipients' exports to donor as a share of total recipient exports
+```
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+TradeGoods3 <- read_csv(here::here("data/raw/aft-bargaining-power/Donors exports to world.csv"))
+View(TradeGoods3)
+```
+
+```{r}
+TradeGoods3 <- TradeGoods3 %>%
+  mutate(goodsexp_donor = OBS_VALUE)
+
+TradeGoods3 <- TradeGoods3 %>%
+  dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, goodsexp_donor)
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+TradeGoods3$TIME_PERIOD <- as.numeric(TradeGoods3$TIME_PERIOD)
+
+TradeGoods3 <- TradeGoods3 %>%
+  dplyr::select(-`Counterpart area`)
+
+CRS_Data <- CRS_Data %>%
+            left_join(TradeGoods3, by = c("DonorName" = "Reference area", "Year" = "TIME_PERIOD"))
+```
+
+```{r}
+CRS_Data$expshare_donor <- CRS_Data$good_imp/CRS_Data$goodsexp_donor #Recipients' imports from donor as a share of total donor exports
+
+CRS_Data <- CRS_Data %>%
+  dplyr::select(-goodsexp_donor)
+```
+
+### Goods and services exports:
+
+#### Recipients:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods and services exports.csv"))
+View(Goods_and_services_exports)
+```
+
+```{r}
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
+```
+
+```{r}
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  pivot_longer(cols = !(`Country Name`),
+               names_to = "Year",
+               values_to = "total_exports")
+```
+
+```{r}
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  mutate(`Country Name` = case_when(
+    `Country Name` == "China" ~ "China (People's Republic of)",
+    `Country Name` == "Congo, Rep." ~ "Congo",
+    `Country Name` == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    `Country Name` == "Korea, Dem. People's Rep." ~ "Democratic People's Republic of Korea",
+    `Country Name` == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    `Country Name` == "Egypt, Arab Rep." ~ "Egypt",
+    `Country Name` == "Gambia, The" ~ "Gambia",
+    `Country Name` == "Iran, Islamic Rep." ~ "Iran",
+    `Country Name` == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    `Country Name` == "Lao PDR" ~ "Lao People's Democratic Republic",
+    `Country Name` == "St. Lucia" ~ "Saint Lucia",
+    `Country Name` == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    `Country Name` == "Somalia, Fed. Rep." ~ "Somalia",
+    `Country Name` == "Turkiye" ~ "Türkiye",
+    `Country Name` == "Venezuela, RB" ~ "Venezuela",
+    `Country Name` == "West Bank and Gaza" ~ "West Bank and Gaza Strip",
+    `Country Name` == "Yemen, Rep." ~ "Yemen",
+    `Country Name` == "Micronesia, Fed. Sts." ~ "Micronesia",
+    TRUE ~ `Country Name`
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+Goods_and_services_exports$Year <- as.numeric(Goods_and_services_exports$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Goods_and_services_exports, by = c("RecipientName" = "Country Name", "Year"))
+```
+
+#### Donors:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods and services exports.csv"))
+View(Goods_and_services_exports)
+```
+
+```{r}
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
+```
+
+```{r}
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  pivot_longer(cols = !(`Country Name`),
+               names_to = "Year",
+               values_to = "total_exports_donor")
+```
+
+```{r}
+CRS_Data$Year <- as.numeric(CRS_Data$Year)
+Goods_and_services_exports$Year <- as.numeric(Goods_and_services_exports$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Goods_and_services_exports, by = c("DonorName" = "Country Name", "Year"))
+```
+
+#### Asymmetry:
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  mutate(
+    recipient_dependency = (good_exp + FinalEXP) * 1e6 / total_exports,
+    donor_dependency     = (good_imp + FinalIMP) * 1e6 / total_exports_donor,
+    total_asym           = donor_dependency - recipient_dependency
+  )
+
+summary(CRS_Data$recipient_dependency)   # expect mostly 0–0.3, not 1e-9
+summary(CRS_Data$total_asym)
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Bilateral investment treaties:
+
+```{r}
+CRS_Data$BITs <- NA
+```
+
+```{r}
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Pakistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Malaysia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Togo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Morocco" &
+              CRS_Data$Year < 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Liberia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Guinea" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Türkiye"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Cameroon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Madagascar" &
+              CRS_Data$Year < 2016] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Sudan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Tunisia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Senegal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Ethiopia" &
+              CRS_Data$Year < 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Niger"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Tanzania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Sierra Leone"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Central African Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Côte d'Ivoire"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Uganda"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Zambia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Chad"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Rwanda"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Indonesia" &
+              CRS_Data$Year < 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Democratic Republic of the Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Gabon" &
+              CRS_Data$Year < 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mauritius"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Haiti"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Yemen" &
+              CRS_Data$Year < 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Egypt" &
+              CRS_Data$Year < 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Jordan" &
+              CRS_Data$Year < 2011] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mali"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Syrian Arab Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Benin"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Papua New Guinea"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Bangladesh"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Somalia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Lesotho"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mauritania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Panama"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Burundi"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Dominica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Saint Lucia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Saint Vincent and the Grenadines"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Nepal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Bolivia" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Montenegro"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Serbia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Guyana"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Cabo Verde"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Eswatini"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Argentina"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mongolia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Albania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Kazakhstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Jamaica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Ukraine"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Belarus"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Viet Nam"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Uzbekistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Georgia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Paraguay"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Namibia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Moldova"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Costa Rica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Peru"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Ghana"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Honduras"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "India" &
+              CRS_Data$Year < 2018] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "South Africa" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Zimbabwe"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Armenia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Azerbaijan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Algeria"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Ecuador" &
+              CRS_Data$Year < 2019] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Cuba"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Kenya"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Nicaragua"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Venezuela"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Lao People's Democratic Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "North Macedonia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Burkina Faso" &
+              CRS_Data$Year >= 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Lebanon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Philippines"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Turkmenistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Kyrgyzstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "El Salvador"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mexico"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Gabon" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Cambodia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Sri Lanka"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Nigeria" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Botswana" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Morocco" &
+              CRS_Data$Year >= 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Bosnia and Herzegovina" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Mozambique" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Thailand"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Iran"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Tajikistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Indonesia" &
+              CRS_Data$Year >= 2007 & CRS_Data$Year < 2018] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Guatemala"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Angola" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "China (People's Republic of)"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Ethiopia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Libya" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Yemen" &
+              CRS_Data$Year >= 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Afghanistan" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Egypt" &
+              CRS_Data$Year >= 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Madagascar" &
+              CRS_Data$Year >= 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Guinea" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Bahrain" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Germany" & 
+              CRS_Data$RecipientName == "Jordan" &
+              CRS_Data$Year >= 2010] <- 1
+```
+
+
+```{r}
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Democratic Republic of the Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Mauritius"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Idonesia" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2016] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Montenegro"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Serbia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Egypt"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Malaysia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Syrian Arab Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Jordan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Sudan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "El Salvador"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Paraguay"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Liberia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Sri Lanka"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Equatorial Guinea"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Panama"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Nepal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Pakistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Costa Rica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Yemen"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Haiti"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "China (People's Republic of)" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2011] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Bangladesh"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Bolivia" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Lao People's Democratic Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Nigeria"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Argentina"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Mongolia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Viet Nam"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Jamaica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Algeria"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Peru"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Uzbekistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Turkmenistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Ukraine"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Kyrgyzstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Ecuador" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2019] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Philippines"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Albania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "South Africa" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Armenia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Morocco"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Lebanon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Georgia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Cuba"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "India" &
+              CRS_Data$Year >= 2006 & CRS_Data$Year < 2018] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Moldova"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Tunisia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "North Macedonia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Kazakhstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Nicaragua"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Honduras"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Guatemala"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Namibia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Azerbaijan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Mexico"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Dominican Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Cambodia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Venezuela"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Zambia" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Mozambique"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Tajikistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Uganda"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Iran"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Ethiopia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Madagascar"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Bosnia and Herzegovina" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Bahrain"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Libya"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Türkiye" &
+              CRS_Data$Year >= 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Guinea" &
+              CRS_Data$Year >= 2017] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Senegal" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "China (People's Republic of)" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Kenya" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Djibouti" &
+              CRS_Data$Year >= 2010] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Iraq" &
+              CRS_Data$Year >= 2016] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "France" & 
+              CRS_Data$RecipientName == "Colombia" &
+              CRS_Data$Year >= 2020] <- 1
+```
+
+```{r}
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Egypt"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Sri Lanka"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "China (People's Republic of)"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Türkiye"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Pakistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Bangladesh"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Mongolia" &
+              CRS_Data$Year < 2017] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Viet Nam"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Cambodia" &
+              CRS_Data$Year >= 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Lao People's Democratic Republic" &
+              CRS_Data$Year >= 2008] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Uzbekistan" &
+              CRS_Data$Year >= 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Peru" &
+              CRS_Data$Year >= 2009] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Papua New Guinea" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Colombia" &
+              CRS_Data$Year >= 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Iraq" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Mozambique" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Myanmar" &
+              CRS_Data$Year >= 2014] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Kazakhstan" &
+              CRS_Data$Year >= 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Ukraine" &
+              CRS_Data$Year >= 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Iran" &
+              CRS_Data$Year >= 2017] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Kenya" &
+              CRS_Data$Year >= 2017] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Armenia" &
+              CRS_Data$Year >= 2019] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Jordan" &
+              CRS_Data$Year >= 2020] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Morocco" &
+              CRS_Data$Year >= 2022] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Côte d'Ivoire" &
+              CRS_Data$Year >= 2021] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Georgia" &
+              CRS_Data$Year >= 2021] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "Japan" & 
+              CRS_Data$RecipientName == "Bahrain" &
+              CRS_Data$Year >= 2023] <- 1
+```
+
+```{r}
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Panama"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Senegal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Democratic Republic of the Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Morocco"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Türkiye"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Cameroon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Egypt"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Bangladesh"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Tunisia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Sri Lanka"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Argentina"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Kazakhstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Armenia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Kyrgyzstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Moldova"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Ecuador" &
+              CRS_Data$Year < 2019] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Jamaica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Ukraine"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Georgia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Mongolia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Albania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Honduras"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Jordan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Azerbaijan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Bolivia" &
+              CRS_Data$Year < 2013] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Mozambique"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Bahrain"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United States" & 
+              CRS_Data$RecipientName == "Rwanda" &
+              CRS_Data$Year >= 2012] <- 1
+```
+
+```{r}
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Egypt"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Indonesia" &
+              CRS_Data$Year < 2018] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Thailand"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Jordan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Sri Lanka"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Senegal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Bangladesh"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Philippines"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Lesotho"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Papua New Guinea"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Malaysia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Paraguay"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Yemen"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Belize"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Cameroon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Saint Lucia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Panama"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Haiti"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "China (People's Republic of)"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Mauritius"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Jamaica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Dominica"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Benin"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Bolivia" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Grenada"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Tunisia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Ghana"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Congo"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Guyana"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Burundi"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Morocco"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Argentina"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Nigeria"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Türkiye"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Mongolia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Bahrain"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Ukraine"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Nepal"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Armenia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Peru"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Uzbekistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Honduras"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Tanzania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Belarus"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Colombia" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "India" &
+              CRS_Data$Year < 2018] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Albania"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Ecuador" &
+              CRS_Data$Year < 2019] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "South Africa" &
+              CRS_Data$Year < 2015] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Pakistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Kyrgyzstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Cuba"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Turkmenistan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Georgia"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Venezuela"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Eswatini"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Lao People's Democratic Republic"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Côte d'Ivoire"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Kazakhstan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Azerbaijan"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Moldova"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Nicaragua"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Tonga"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Uganda"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Lebanon"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Kenya"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "El Salvador"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Sierra Leone"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Viet Nam"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Bosnia and Herzegovina"] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Serbia" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Mozambique" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Mexico" &
+              CRS_Data$Year >= 2007] <- 1
+
+CRS_Data$BITs[CRS_Data$DonorName == "United Kingdom" & 
+              CRS_Data$RecipientName == "Colombia" &
+              CRS_Data$Year >= 2014] <- 1
+```
+
+```{r}
+CRS_Data$BITs[is.na(CRS_Data$BITs)] <- 0
+```
+
+
+### World Governance Indicators:
+
+```{r}
+wgi <- read_xlsx(here::here("data/raw/aft-bargaining-power/wgidataset.xlsx"))
+View(wgi)
+```
+
+```{r}
+wgi <- wgi %>%
+  filter(year %in% c(2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) %>%
+  dplyr::select(countryname, year, indicator, estimate)
+```
+
+```{r}
+wgi <- wgi %>%
+  pivot_wider(names_from = indicator, values_from = estimate)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_wgi <- unique(wgi$countryname)
+
+in_merged_not_in_wgi <- setdiff(unique_merged, unique_wgi)
+in_wgi_not_in_merged <- setdiff(unique_wgi, unique_merged)
+
+print("Values in merged data but not in WGI data:")
+print(in_merged_not_in_wgi)
+
+print("Values in WGI data but not in merged data:")
+print(in_wgi_not_in_merged)
+```
+
+```{r}
+wgi <- wgi %>%
+  mutate(countryname = case_when(
+    countryname == "Cape Verde" ~ "Cabo Verde",
+    countryname == "China" ~ "China (People's Republic of)",
+    countryname == "Congo, Rep." ~ "Congo",
+    countryname == "Korea, Dem. Rep." ~ "Democratic People's Republic of Korea",
+    countryname == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    countryname == "Egypt, Arab Rep." ~ "Egypt",
+    countryname == "Gambia, The" ~ "Gambia",
+    countryname == "Iran, Islamic Rep." ~ "Iran",
+    countryname == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    countryname == "Lao PDR" ~ "Lao People's Democratic Republic",
+    countryname == "St. Lucia" ~ "Saint Lucia",
+    countryname == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    countryname == "Venezuela, RB" ~ "Venezuela",
+    countryname == "" ~ "Wallis and Futuna",
+    countryname == "West Bank and Gaza" ~ "West Bank and Gaza Strip",
+    countryname == "Yemen, Rep." ~ "Yemen",
+    countryname == "Micronesia, Fed. Sts." ~ "Micronesia",
+    countryname == "St. Kitts and Nevis" ~ "Saint Kitts and Nevis",
+    countryname == "São Tomé and Principe" ~ "Sao Tome and Principe",
+    TRUE ~ countryname
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(wgi, by = c("RecipientName" = "countryname", "Year" = "year"))
+```
+
+### Economic complexity:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+eci <- read_csv(here::here("data/raw/aft-bargaining-power/complexity_eci_a_hs96_hs4.csv"))
+View(eci)
+```
+
+```{r}
+eci <- eci %>%
+  filter(year %in% c(2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) %>%
+  dplyr::select(country_name, year, eci)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_eci <- unique(eci$country_name)
+
+in_merged_not_in_eci <- setdiff(unique_merged, unique_eci)
+in_eci_not_in_merged <- setdiff(unique_eci, unique_merged)
+
+print("Values in merged data but not in ECI data:")
+print(in_merged_not_in_eci)
+
+print("Values in ECI data but not in merged data:")
+print(in_eci_not_in_merged)
+```
+
+```{r}
+eci <- eci %>%
+  mutate(country_name = case_when(
+    country_name == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    country_name == "Republic of the Congo" ~ "Congo",
+    country_name == "China" ~ "China (People's Republic of)",
+    country_name == "North Korea" ~ "Democratic People's Republic of Korea",
+    country_name == "Syria" ~ "Syrian Arab Republic",
+    country_name == "Turkey" ~ "Türkiye",
+    country_name == "Vietnam" ~ "Viet Nam",
+    country_name == "Laos" ~ "Lao People's Democratic Republic",
+    TRUE ~ country_name
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(eci, by = c("RecipientName" = "country_name", "Year" = "year"))
+```
+
+### Natural resources rents (%GDP):
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+natrents <- read_csv(here::here("data/raw/aft-bargaining-power/Natural resources rents (%GDP).csv"))
+View(natrents)
+```
+
+```{r}
+natrents <- natrents %>%
+  dplyr::select(-`Series Code`, -`Country Code`, -`Series Name`)
+```
+
+```{r}
+natrents <- natrents %>%
+  rename_with(~ gsub("\\s*\\[.*\\]", "", .))
+```
+
+```{r}
+natrents <- natrents %>%
+  pivot_longer(
+    cols = starts_with("20"),
+    names_to = "Year",
+    values_to = "natural_resources"
+  )
+```
+
+```{r}
+natrents <- natrents %>%
+  rename(RecipientName = `Country Name`)
+```
+
+```{r}
+natrents <- natrents %>%
+  filter(Year != "2005")
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_natrents <- unique(natrents$RecipientName)
+
+in_merged_not_in_natrents <- setdiff(unique_merged, unique_natrents)
+in_natrents_not_in_merged <- setdiff(unique_natrents, unique_merged)
+
+print("Values in merged data but not in natural rents data:")
+print(in_merged_not_in_natrents)
+
+print("Values in natural rents data but not in merged data:")
+print(in_natrents_not_in_merged)
+```
+
+```{r}
+natrents <- natrents %>%
+  mutate(RecipientName = case_when(
+    RecipientName == "China" ~ "China (People's Republic of)",
+    RecipientName == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    RecipientName == "Congo, Rep." ~ "Congo",
+    RecipientName == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    RecipientName == "Egypt, Arab Rep." ~ "Egypt",
+    RecipientName == "Gambia, The" ~ "Gambia",
+    RecipientName == "Iran, Islamic Rep." ~ "Iran",
+    RecipientName == "Korea, Dem. People's Rep." ~ "Democratic People's Republic of Korea",
+    RecipientName == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    RecipientName == "Lao PDR" ~ "Lao People's Democratic Republic",
+    RecipientName == "Micronesia, Fed. Sts." ~ "Micronesia",
+    RecipientName == "St. Kitts and Nevis" ~ "Saint Kitts and Nevis",
+    RecipientName == "St. Lucia" ~ "Saint Lucia",
+    RecipientName == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    RecipientName == "Turkiye" ~ "Türkiye",
+    RecipientName == "Venezuela, RB" ~ "Venezuela",
+    RecipientName == "Vietnam" ~ "Viet Nam",
+    RecipientName == "Yemen, Rep." ~ "Yemen",
+    TRUE ~ RecipientName
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+natrents$Year <- as.character(natrents$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(natrents, by = c("RecipientName", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Other AfT (by other donors) and other ODA (by partners and other donors):
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+```
+
+```{r}
+CRS_2006 <- CRS_2006 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2007 <- CRS_2007 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2008 <- CRS_2008 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2009 <- CRS_2009 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2010 <- CRS_2010 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2011 <- CRS_2011 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2012 <- CRS_2012 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2013 <- CRS_2013 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2014 <- CRS_2014 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2015 <- CRS_2015 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2016 <- CRS_2016 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2017 <- CRS_2017 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2018 <- CRS_2018 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2019 <- CRS_2019 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2020 <- CRS_2020 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2021 <- CRS_2021 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2022 <- CRS_2022 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+
+CRS_2023 <- CRS_2023 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
+```
+
+```{r}
+CRS_Data2 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+View(CRS_Data2)
+```
+
+```{r}
+# Creating a recipient-specific variable with all other AfT (i.e., from all other donors)
+Other_AfT <- CRS_Data2 %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants")) %>%
+  group_by(RecipientName, Year) %>%
+  summarise(
+    Total_Disbursements = sum(USD_Disbursement, na.rm = TRUE), # Var with all AfT disbursements received by a recipient in a year
+    .groups = "drop"
+  )
+
+View(Other_AfT)
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+Other_AfT$Year <- as.character(Other_AfT$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Other_AfT, by = c("RecipientName", "Year"))
+
+CRS_Data$Other_AfT <- CRS_Data$Total_Disbursements - CRS_Data$USD_Disbursement # Var with all AfT disbursements minus by each donor per row
+```
+
+```{r}
+All_ODA <- CRS_Data2 %>%
+  group_by(RecipientName, Year) %>%
+  summarise(
+    Total_ODA = sum(USD_Disbursement, na.rm = TRUE), # Var with all ODA disbursements received by a recipient in a year
+    .groups = "drop"
+  )
+
+View(All_ODA)
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+All_ODA$Year <- as.character(All_ODA$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(All_ODA, by = c("RecipientName", "Year"))
+```
+
+```{r}
+Other_ODA <- CRS_Data2 %>%
+  filter(DonorName %in% c("France", "Germany", "Japan", "United Kingdom", "United States")) %>%
+  group_by(RecipientName, DonorName, Year) %>%
+  summarise(
+    Donor_ODA = sum(USD_Disbursement, na.rm = TRUE), # Var with all ODA disbursements received by a recipient from a donor in a year
+    .groups = "drop"
+  )
+
+View(Other_ODA)
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+Other_ODA$Year <- as.character(Other_ODA$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Other_ODA, by = c("RecipientName", "DonorName", "Year"))
+
+CRS_Data$Other_ODA <- CRS_Data$Total_ODA - CRS_Data$Donor_ODA
+```
+
+### Migration and refugee flows:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+foreign_pop <- read_csv(here::here("data/raw/aft-bargaining-power/Inflows of foreign population.csv"))
+View(foreign_pop)
+
+asylum <- read_csv(here::here("data/raw/aft-bargaining-power/Inflows of asylum seekers.csv"))
+View(asylum)
+```
+
+```{r}
+foreign_pop <- foreign_pop %>%
+  dplyr::select(`Reference area`, Citizenship, OBS_VALUE, TIME_PERIOD)
+
+asylum <- asylum %>%
+  dplyr::select(`Reference area`, Citizenship, OBS_VALUE, TIME_PERIOD)
+```
+
+```{r}
+foreign_pop <- foreign_pop %>%
+  rename(RecipientName = Citizenship,
+         DonorName = `Reference area`,
+         Year = TIME_PERIOD,
+         Foreign_pop = OBS_VALUE)
+
+asylum <- asylum %>%
+  rename(RecipientName = Citizenship,
+         DonorName = `Reference area`,
+         Year = TIME_PERIOD,
+         Asylum_pop = OBS_VALUE)
+```
+
+```{r}
+migration <- foreign_pop %>%
+  full_join(asylum, by = c("RecipientName", "DonorName", "Year"))
+
+View(migration)
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_migration <- unique(migration$RecipientName)
+
+in_merged_not_in_migration <- setdiff(unique_merged, unique_migration)
+in_migration_not_in_merged <- setdiff(unique_migration, unique_merged)
+
+print("Values in merged data but not in migration data:")
+print(in_merged_not_in_migration)
+
+print("Values in migration data but not in merged data:")
+print(in_migration_not_in_merged)
+```
+
+```{r}
+migration <- migration %>%
+  mutate(RecipientName = case_when(
+    RecipientName == "China (People’s Republic of)" ~ "China (People's Republic of)",
+    RecipientName == "Côte d’Ivoire" ~ "Côte d'Ivoire",
+    RecipientName == "Democratic People’s Republic of Korea" ~ "Democratic People's Republic of Korea",
+    RecipientName == "Lao People’s Democratic Republic" ~ "Lao People's Democratic Republic",
+    RecipientName == "Palestinian Authority or West Bank and Gaza Strip" ~ "West Bank and Gaza Strip",
+    TRUE ~ RecipientName
+  ))
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+migration$Year <- as.character(migration$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(migration, by = c("RecipientName", "DonorName", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Value added to partner exports:
+
+```{r message=FALSE, warning=FALSE}
+value_added <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"))
+View(value_added)
+```
+
+```{r}
+value_added <- value_added %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2022)
+```
+
+```{r}
+value_added2 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 2)
+View(value_added2)
+```
+
+```{r}
+value_added2 <- value_added2 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2021)
+```
+
+```{r}
+value_added3 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 3)
+```
+
+```{r}
+value_added3 <- value_added3 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2020)
+```
+
+```{r}
+value_added4 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 4)
+```
+
+```{r}
+value_added4 <- value_added4 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2019)
+```
+
+```{r}
+value_added5 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 5)
+```
+
+```{r}
+value_added5 <- value_added5 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2018)
+```
+
+```{r}
+value_added6 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 6)
+```
+
+```{r}
+value_added6 <- value_added6 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2017)
+```
+
+```{r}
+value_added7 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 7)
+```
+
+```{r}
+value_added7 <- value_added7 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2016)
+```
+
+```{r}
+value_added8 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 8)
+```
+
+```{r}
+value_added8 <- value_added8 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2015)
+```
+
+```{r}
+value_added9 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 9)
+```
+
+```{r}
+value_added9 <- value_added9 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2014)
+```
+
+```{r}
+value_added10 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 10)
+```
+
+```{r}
+value_added10 <- value_added10 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2013)
+```
+
+```{r}
+value_added11 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 11)
+```
+
+```{r}
+value_added11 <- value_added11 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2012)
+```
+
+```{r}
+value_added12 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 12)
+```
+
+```{r}
+value_added12 <- value_added12 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2011)
+```
+
+```{r}
+value_added13 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 13)
+```
+
+```{r}
+value_added13 <- value_added13 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2010)
+```
+
+```{r}
+value_added14 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 14)
+```
+
+```{r}
+value_added14 <- value_added14 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2009)
+```
+
+```{r}
+value_added15 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 15)
+```
+
+```{r}
+value_added15 <- value_added15 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2008)
+```
+
+```{r}
+value_added16 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 16)
+```
+
+```{r}
+value_added16 <- value_added16 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2007)
+```
+
+```{r}
+value_added17 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 17)
+```
+
+```{r}
+value_added17 <- value_added17 %>%
+  rename(OriginVA = 1) %>%
+  pivot_longer(
+    cols = -OriginVA,
+    names_to = "ExportingVA",
+    values_to = "VA"
+  ) %>%
+  mutate(Year = 2006)
+```
+
+```{r}
+Value_Added_combined <- bind_rows(
+  value_added, value_added2, value_added3, value_added4, 
+  value_added5, value_added6, value_added7, value_added8, 
+  value_added9, value_added10, value_added11, value_added12, 
+  value_added13, value_added14, value_added15, value_added16,
+  value_added17)
+
+View(Value_Added_combined)
+```
+
+```{r}
+Value_Added_combined <- Value_Added_combined %>%
+  filter(!(OriginVA %in% c("Rest of World", "_1") | ExportingVA %in% c("Rest of World", "_1")))
+```
+
+```{r}
+Value_Added_combined <- Value_Added_combined %>%
+  filter(ExportingVA %in% c("France", "Germany", "Japan", "UK", "USA"))
+```
+
+```{r}
+Value_Added_combined <- Value_Added_combined %>%
+  mutate(ExportingVA = case_when(
+    ExportingVA == "UK" ~ "United Kingdom",
+    ExportingVA == "US" ~ "United States",
+    TRUE ~ ExportingVA
+  ))
+```
+
+```{r}
+Value_Added_combined <- Value_Added_combined %>%
+  rename(DonorName = ExportingVA, RecipientName = OriginVA)
+```
+
+```{r}
+Value_Added_combined <- Value_Added_combined %>%
+  mutate(RecipientName = case_when(
+    RecipientName == "Swaziland" ~ "Eswatini",
+    RecipientName == "Cote dIvoire" ~ "Côte d'Ivoire",
+    RecipientName == "Turkey" ~ "Türkiye",
+    RecipientName == "Syria" ~ "Syrian Arab Republic",
+    RecipientName == "DR Congo" ~ "Democratic Republic of the Congo",
+    RecipientName == "Cape Verde" ~ "Cabo Verde",
+    RecipientName == "Laos" ~ "Lao People's Democratic Republic",
+    RecipientName == "China" ~ "China (People's Republic of)",
+    RecipientName == "North Korea" ~ "Democratic People's Republic of Korea",
+    RecipientName == "Antigua" ~ "Antigua and Barbuda",
+    RecipientName == "TFYR Macedonia" ~ "North Macedonia",
+    TRUE ~ RecipientName))
+```
+
+```{r}
+Value_Added_combined$Year <- as.character(Value_Added_combined$Year)
+CRS_Data$Year <- as.character(CRS_Data$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(Value_Added_combined, by = c("RecipientName", "DonorName", "Year"))
+```
+
+### Threat point donors:
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+```
+
+```{r}
+CRS_2006 <- CRS_2006 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2007 <- CRS_2007 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2008 <- CRS_2008 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2009 <- CRS_2009 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2010 <- CRS_2010 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2011 <- CRS_2011 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2012 <- CRS_2012 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2013 <- CRS_2013 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2014 <- CRS_2014 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2015 <- CRS_2015 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2016 <- CRS_2016 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2017 <- CRS_2017 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2018 <- CRS_2018 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2019 <- CRS_2019 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2020 <- CRS_2020 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2021 <- CRS_2021 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2022 <- CRS_2022 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+
+CRS_2023 <- CRS_2023 %>%
+  dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
+```
+
+```{r}
+CRS_Data3 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+View(CRS_Data3)
+```
+
+```{r}
+# New threat point option: 'Replaceability' of recipient
+AfT_only <- CRS_Data3 %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants"))
+
+donor_threat_dyadic <- AfT_only %>%
+  group_by(DonorName, RecipientName, Year) %>%
+  summarise(
+    dyad_aft = sum(USD_Commitment, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(DonorName, Year) %>%
+  mutate(
+    donor_total_aft = sum(dyad_aft, na.rm = TRUE),
+    donor_threat_dyad = 1 - (dyad_aft / donor_total_aft)
+  ) %>%
+  ungroup()
+
+
+View(donor_threat_dyadic)
+```
+
+```{r}
+donor_threat_dyad_lag <- donor_threat_dyadic %>%
+  arrange(Year) %>%
+  mutate(
+    donor_threat_dyad_lag = lag(donor_threat_dyad)
+  ) %>%
+  ungroup()
+
+View(donor_threat_dyad_lag)
+```
+
+```{r}
+CRS_Data$Year <- as.character(CRS_Data$Year)
+donor_threat_dyad_lag$Year <- as.character(donor_threat_dyad_lag$Year)
+
+CRS_Data <- CRS_Data %>%
+  left_join(
+    donor_threat_dyad_lag %>%
+      dplyr::select(DonorName, RecipientName, Year, donor_threat_dyad_lag),
+    by = c("DonorName", "RecipientName", "Year")
+  )
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Policy concessions 2:
+
+```{r}
+baci_files <- c(                              
+  here::here("data/raw/aft-bargaining-power/BACI_HS92_V202601/BACI_HS92_Y2004_V202601.csv"),
+  here::here("data/raw/aft-bargaining-power/BACI_HS92_V202601/BACI_HS92_Y2005_V202601.csv")
+)
+cc_file    <- here::here("data/raw/aft-bargaining-power/BACI_HS92_V202601/country_codes_V202601.csv")
+teti_gtap  <- here::here("data/raw/aft-bargaining-power/GTAP_vbeta1-2024-12/tariff_GTAP_88_21_vbeta1-2024-12.csv")
+ 
+donors     <- c("FRA", "DEU", "JPN", "GBR", "USA")
+diag4_year <- 2015
+```
+
+```{r}
+## GTAP 10 / GSEC3 standard ordering, merchandise sectors 1-47 (code -> number).
+## Used only if your concordance gives 3-letter codes instead of numbers.
+## Positions 1-28 and 34-47 are confirmed from the GTAP 10 sector table;
+## 29-33 (lea,lum,ppp,p_c,chm) follow the standard ordering — verify against
+## your concordance file's own labels if it is code-based.
+gtap_lookup <- tibble(
+  code = c("pdr","wht","gro","v_f","osd","c_b","pfb","ocr","ctl","oap","rmk",
+           "wol","frs","fsh","coa","oil","gas","omn","cmt","omt","vol","mil",
+           "pcr","sgr","ofd","b_t","tex","wap","lea","lum","ppp","p_c","chm",
+           "bph","rpp","nmm","i_s","nfm","fmp","ele","eeq","ome","mvh","otn",
+           "omf","ely","gdt"),
+  gtap = 1:47
+)
+```
+
+```{r}
+# Country codes (BACI):
+cc <- read_csv(cc_file, show_col_types = FALSE)
+names(cc) <- tolower(names(cc))
+code_col <- intersect(c("country_code", "code"), names(cc))[1]
+iso3_col <- intersect(c("country_iso3", "iso_3digit_alpha", "iso3"), names(cc))[1]
+stopifnot(!is.na(code_col), !is.na(iso3_col))
+cc <- cc %>% transmute(i = as.integer(.data[[code_col]]), exp_iso3 = .data[[iso3_col]])
+cat("[2] country codes loaded:", nrow(cc), "countries\n")
+```
+
+```{r}
+# BACI base-year weights:
+## exporter x HS6, pooled across base years = each country's GLOBAL exports.
+baci <- baci_files %>%
+  map_dfr(~ read_csv(.x, show_col_types = FALSE, col_types = cols(
+    t = col_integer(), i = col_integer(), j = col_integer(),
+    k = col_character(), v = col_double(), q = col_character()
+  ))) %>%
+  mutate(k = str_pad(k, 6, "left", "0")) %>%
+  left_join(cc, by = "i")
+ 
+exp_prod <- baci %>%
+  group_by(exp_iso3, k) %>%
+  summarise(v = sum(v, na.rm = TRUE), .groups = "drop")
+cat("[3] BACI loaded:", nrow(baci), "rows;",
+    n_distinct(exp_prod$k), "HS6 codes;",
+    sum(baci$exp_iso3 %in% donors), "donor rows\n")
+```
+
+```{r}
+# Concordance ingest + validation:
+## Read everything as character first so codes keep leading zeros.
+library(readxl)
+conc_file <- here::here("data/raw/aft-bargaining-power/11723.xlsx")
+
+## H0 sheet has a TWO-ROW header (row 1 = "GTAP 10"/"GTAP 11" banner,
+## row 2 = real column names). skip = 1 drops the banner so the true
+## header is used.
+raw_conc <- read_excel(conc_file, sheet = "H0", skip = 1, col_types = "text")
+cat("[4] Concordance columns:\n"); print(names(raw_conc))
+cat("[4] First rows:\n");          print(head(raw_conc, 4))
+
+## Columns set BY HAND (auto-detect is disabled below): the file gives
+## 3-letter GTAP codes in two flavours -- GSEC3 (GTAP 10) and GSEC3_rev
+## (GTAP 11). Using the GTAP 11 revision to match the file you downloaded.
+hs6_col  <- "Code"        # HS6 code
+gtap_col <- "GSEC3_rev"   # GTAP 11 mapping (switch to "GSEC3" for GTAP 10)
+
+## --- build the clean hs6 -> gtap (integer, as character) map ------------- ##
+conc0 <- raw_conc %>%
+  transmute(hs6 = str_pad(str_trim(.data[[hs6_col]]), 6, "left", "0"),
+            gtap_raw = str_trim(.data[[gtap_col]])) %>%
+  filter(grepl("^[0-9]{6}$", hs6), !is.na(gtap_raw), gtap_raw != "")
+
+codes_are_numeric <- mean(grepl("^[0-9]+$", conc0$gtap_raw)) > 0.9
+cat("[4] GTAP column detected as",
+    if (codes_are_numeric) "NUMBERS" else "3-LETTER CODES", "\n")
+
+conc <- conc0 %>%
+  mutate(gtap = if (codes_are_numeric) as.integer(gtap_raw)
+                else gtap_lookup$gtap[match(tolower(gtap_raw), gtap_lookup$code)]) %>%
+  filter(!is.na(gtap), gtap >= 1, gtap <= 65) %>%
+  distinct(hs6, gtap) %>%
+  mutate(gtap = as.character(gtap))
+
+## each HS6 should map to exactly one GTAP sector
+multi <- conc %>% count(hs6) %>% filter(n > 1)
+if (nrow(multi) > 0) {
+  warning(nrow(multi), " HS6 codes map to >1 GTAP sector; keeping first.")
+  conc <- conc %>% group_by(hs6) %>% slice(1) %>% ungroup()
+}
+cat("[4] concordance rows:", nrow(conc),
+    "| distinct GTAP sectors:", n_distinct(conc$gtap), "\n")
+```
+
+```{r}
+# Anchor check (does the numbering match Teti's?)
+anchors <- tribble(
+  ~hs6,     ~expect, ~what,
+  "100190", "2",  "wheat -> wht(2)",
+  "020110", "19", "bovine meat -> cmt(19)",
+  "271019", "32", "refined petroleum -> p_c(32)",
+  "300490", "34", "medicaments -> bph(34)  <-- GSEC2/GSEC3 discriminator",
+  "610910", "28", "cotton T-shirts -> wap(28)",
+  "870322", "43", "motor cars -> mvh(43)"
+)
+anchor_check <- anchors %>%
+  left_join(conc, by = "hs6") %>%
+  mutate(ok = gtap == expect)
+cat("\n[4] ANCHOR CHECK (all 'ok' should be TRUE):\n")
+print(anchor_check)
+if (any(!anchor_check$ok %in% TRUE))
+  warning("Anchor mismatch -> concordance is likely the wrong GTAP version ",
+          "(GSEC2 57-sector) or wrong columns. Fix before trusting results.")
+```
+```{r}
+# Attach sectors to BACI + unmapped check:
+exp_prod <- exp_prod %>%
+  left_join(conc, by = c("k" = "hs6")) %>%
+  mutate(chap = as.integer(substr(k, 1, 2)), section = hs2_to_section(chap))
+ 
+unmapped <- exp_prod %>%
+  filter(exp_iso3 %in% donors) %>%
+  group_by(exp_iso3) %>%
+  summarise(share_value_unmapped = sum(v[is.na(gtap)]) / sum(v), .groups = "drop")
+cat("\n[5] donor export value with NO GTAP mapping (should be ~0):\n")
+print(unmapped)
+```
+
+```{r}
+# Share vectors (donors + world):
+make_shares <- function(df, sector_col) {
+  bind_rows(df %>% filter(exp_iso3 %in% donors),     # donor-specific
+            df %>% mutate(exp_iso3 = "WORLD")) %>%    # all exporters pooled
+    filter(!is.na(.data[[sector_col]])) %>%
+    group_by(exp_iso3, sector = .data[[sector_col]]) %>%
+    summarise(v = sum(v), .groups = "drop_last") %>%
+    mutate(share = v / sum(v)) %>% ungroup() %>%
+    dplyr::select(exp_iso3, sector, share)
+}
+shares_gtap <- make_shares(exp_prod, "gtap")
+shares_sec  <- make_shares(exp_prod, "section")
+ 
+to_matrix <- function(sh) {
+  w <- sh %>% pivot_wider(names_from = exp_iso3, values_from = share,
+                          values_fill = 0)
+  M <- as.matrix(w[, setdiff(names(w), "sector")]); rownames(M) <- w$sector; M
+}
+M_gtap <- to_matrix(shares_gtap)
+M_sec  <- to_matrix(shares_sec)
+cat("[6] share vectors built: GTAP", nrow(M_gtap), "sectors; Section",
+    nrow(M_sec), "sectors\n")
+```
+
+```{r}
+# Diagnostic 1: Concentration
+diag1 <- shares_gtap %>%
+  filter(exp_iso3 %in% donors) %>%
+  group_by(exp_iso3) %>%
+  summarise(hhi = sum(share^2), eff_n_sectors = 1 / sum(share^2),
+            top5_share = sum(sort(share, decreasing = TRUE)[1:5]), .groups = "drop")
+cat("\n=== DIAGNOSTIC 1: donor basket concentration (GTAP) ===\n"); print(diag1)
+```
+
+```{r}
+# Diagnostic 2: Donor vs donor
+## THE decisive check. High distance => tau_drt genuinely moves across donors.
+pr <- combn(donors, 2)
+diag2 <- tibble(d1 = pr[1, ], d2 = pr[2, ],
+  cosine = map2_dbl(d1, d2, ~ cosine_dist(M_gtap[, .x], M_gtap[, .y])),
+  l1     = map2_dbl(d1, d2, ~ l1_dist(M_gtap[, .x], M_gtap[, .y])))
+cat("\n=== DIAGNOSTIC 2: pairwise donor distance (GTAP) ===\n"); print(diag2)
+```
+
+```{r}
+# Diagnostic 3: Donor vs world
+diag3 <- tibble(donor = donors,
+  cosine_vs_world = map_dbl(donors, ~ cosine_dist(M_gtap[, .x], M_gtap[, "WORLD"])),
+  l1_vs_world     = map_dbl(donors, ~ l1_dist(M_gtap[, .x], M_gtap[, "WORLD"])))
+cat("\n=== DIAGNOSTIC 3: donor vs world distance (GTAP) ===\n"); print(diag3)
+```
+
+```{r}
+# Diagnostic 4a: GTAP vs section
+summarise_level <- function(M) {
+  prc <- combn(donors, 2)
+  c(mean_pairwise_donor_L1 = mean(map2_dbl(prc[1, ], prc[2, ],
+                                           ~ l1_dist(M[, .x], M[, .y]))),
+    mean_donor_vs_world_L1 = mean(map_dbl(donors, ~ l1_dist(M[, .x], M[, "WORLD"]))))
+}
+diag4a <- rbind(GTAP = summarise_level(M_gtap), Section = summarise_level(M_sec))
+cat("\n=== DIAGNOSTIC 4a: differentiation, GTAP vs Section (weights) ===\n")
+print(round(diag4a, 4))
+```
+
+```{r}
+# Diagnostic 4b: Spread of the assembled tau
+teti <- read_csv(teti_gtap, show_col_types = FALSE) %>%
+  mutate(sector = as.character(sector))           # match conc$gtap type
+stopifnot(diag4_year %in% teti$year)
+ 
+mfn <- teti %>% filter(year == diag4_year) %>%
+  distinct(iso1, sector, mfn95)                   # mfn95 varies by i-sector
+ 
+matched <- length(intersect(unique(shares_gtap$sector), unique(mfn$sector)))
+cat("\n[11] GTAP sectors matched between weights and Teti:", matched,
+    "(expect ~46)\n")
+ 
+w_long <- shares_gtap %>% rename(w = share)
+tau <- mfn %>%
+  inner_join(w_long, by = "sector", relationship = "many-to-many") %>%
+  group_by(iso1, exp_iso3) %>%
+  summarise(tau = sum(w * mfn95) / sum(w), .groups = "drop")  # renormalize
+ 
+diag4b <- tau %>%
+  filter(exp_iso3 %in% donors) %>%
+  group_by(iso1) %>%
+  summarise(sd_across_donors = sd(tau),
+            range_across_donors = max(tau) - min(tau), .groups = "drop") %>%
+  summarise(median_within_recipient_donor_sd = median(sd_across_donors, na.rm = TRUE),
+            mean_within_recipient_donor_sd   = mean(sd_across_donors, na.rm = TRUE),
+            median_within_recipient_range    = median(range_across_donors, na.rm = TRUE))
+cat("\n=== DIAGNOSTIC 4b: within-recipient cross-donor spread of tau (",
+    diag4_year, ", ppt) ===\n", sep = ""); print(diag4b)
+ 
+diag4b_net <- tau %>%
+  pivot_wider(names_from = exp_iso3, values_from = tau) %>%
+  mutate(across(all_of(donors), ~ .x - WORLD, .names = "net_{.col}")) %>%
+  summarise(across(starts_with("net_"), ~ median(.x, na.rm = TRUE),
+                   .names = "med_{.col}"))
+cat("\n=== median (tau_donor - tau_world) by donor, ppt ===\n"); print(diag4b_net)
+ 
+cat("\nDone. Read the verdict from diag2/diag3 (is it dyadic?) and diag4b ",
+    "(does it survive the tariff schedule?).\n", sep = "")
+```
+
+```{r}
+# ============ tariff95 (preferential) vs mfn95 (composition), multi-year ===
+
+## donor sector-share weights (drop WORLD; we benchmark within-basket here)
+w_donor <- shares_gtap %>%
+  filter(exp_iso3 %in% donors) %>%
+  rename(donor = exp_iso3, w = share)        # donor, sector, w
+
+## build per-(recipient, donor) tau for one year, both channels
+build_tau_year <- function(yr) {
+  mfn_rs <- teti %>% filter(year == yr) %>%
+    distinct(iso1, sector, mfn95)                         # recipient-sector MFN
+
+  eff_rds <- teti %>% filter(year == yr, iso2 %in% donors) %>%
+    distinct(iso1, iso2, sector, tariff95) %>%
+    rename(donor = iso2)                                  # recipient-donor-sector eff
+
+  mfn_rs %>%
+    inner_join(w_donor, by = "sector",
+               relationship = "many-to-many") %>%         # + donor, w
+    left_join(eff_rds, by = c("iso1", "donor", "sector")) %>%
+    mutate(eff95 = coalesce(tariff95, mfn95)) %>%         # no pref row => MFN
+    group_by(iso1, donor) %>%
+    summarise(tau_mfn = sum(w * mfn95) / sum(w),          # composition only
+              tau_eff = sum(w * eff95) / sum(w),          # composition + preference
+              .groups = "drop") %>%
+    mutate(pref_margin = tau_mfn - tau_eff, year = yr)    # >= 0: preference channel
+}
+
+## within-recipient cross-donor spread, per year, per channel
+summarise_spread <- function(tau_df) {
+  tau_df %>%
+    group_by(iso1, year) %>%
+    summarise(sd_mfn  = sd(tau_mfn),
+              sd_eff  = sd(tau_eff),
+              sd_pref = sd(pref_margin), .groups = "drop") %>%
+    group_by(year) %>%
+    summarise(med_sd_mfn  = median(sd_mfn,  na.rm = TRUE),   # == your diag4b in 2015
+              med_sd_eff  = median(sd_eff,  na.rm = TRUE),   # effective (incl. pref)
+              med_sd_pref = median(sd_pref, na.rm = TRUE),   # preference-only spread
+              .groups = "drop")
+}
+
+## run across years (auto-restricted to years present, all <= 2021)
+years   <- c(2008, 2010, 2012, 2015, 2018, 2020, 2021)
+years   <- years[years %in% unique(teti$year)]
+tau_all <- map_dfr(years, build_tau_year)
+
+cat("\n=== CHANNEL COMPARISON: median within-recipient cross-donor SD (ppt) ===\n")
+print(summarise_spread(tau_all))
+
+## which donors actually receive the biggest preferential margins?
+cat("\n=== median preferential margin by donor (ppt), by year ===\n")
+tau_all %>%
+  group_by(year, donor) %>%
+  summarise(med_pref_margin = median(pref_margin, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = donor, values_from = med_pref_margin) %>%
+  print()
+```
+```{r}
+# The med_sd_mfn column reproduces your 0.446 for 2015 — so the refactor is consistent and the rest of the table is trustworthy.
+# The headline: the effective-tariff channel carries real and growing dyadic signal. med_sd_eff runs 0.54 → 0.66 ppt and rises monotonically, while med_sd_mfn is flat at ~0.44 and even drifts down slightly. So preferences are adding cross-donor spread on top of composition, and adding more of it every year. By 2021 the effective measure has ~50% more dyadic dispersion than the pure-composition one. That's the direction you wanted.
+# But notice where the signal actually sits — this is the important subtlety. med_sd_eff (~0.6) is far larger than med_sd_pref (~0.17), even though eff = mfn − pref by construction. That's not a contradiction: the effective measure's spread is still mostly inherited from the MFN composition channel, with the preferential margin adding a modest, increasing increment. So "switch to tariff95" doesn't escape the compression problem — it improves on it at the margin. The clean, theory-relevant object is pref_margin itself, and its spread (med_sd_pref) is genuinely small in absolute terms (0.04 → 0.17 ppt). The honest framing is: the preferential channel is real and rising, not large.
+# The donor-margin table is where your paper's story comes alive, and it behaves exactly as the theory predicts. France, Germany, and the UK show substantial and growing median preferential margins (France hits 0.82 ppt by 2021), while Japan sits near zero throughout (~0.01–0.09) and the US stays low (~0.04–0.08). That is precisely the EU-centric pattern you'd expect for an ODA-recipient set: EBA, the EPAs, and EU GSP reach deep into these recipients, while Japanese and US preferential schemes barely touch them. This is strong corroboration that pref_margin is capturing genuine, donor-specific, negotiated market access rather than noise — and it directly supports a bargaining narrative centered on EU donors.
+```
+
+```{r}
+# ================= coverage diagnosis + balanced-dyad trend ===============
+
+## ---- (A) is the preferential rate actually REPORTED, year by year? ------
+## tariff95 varies by i-j-sector; if it's largely NA early on, eff collapses
+## to mfn and pref_margin is mechanically ~0 (a data artifact, not policy).
+pref_coverage <- teti %>%
+  filter(iso2 %in% donors) %>%
+  group_by(year) %>%
+  summarise(
+    n_rows        = n(),
+    pref_reported = mean(!is.na(tariff95)),            # share of rows w/ a pref rate
+    pref_below_mfn = mean(tariff95 < mfn95, na.rm = TRUE),  # share actually preferential
+    .groups = "drop"
+  )
+cat("\n=== (A) preferential-rate coverage in Teti, donors only ===\n")
+print(pref_coverage, n = Inf)
+
+## same, split by donor (does early sparsity hit EU vs JPN/USA differently?)
+cat("\n=== (A2) share of rows with a reported preferential rate, by donor ===\n")
+teti %>%
+  filter(iso2 %in% donors) %>%
+  group_by(year, iso2) %>%
+  summarise(pref_reported = mean(!is.na(tariff95)), .groups = "drop") %>%
+  pivot_wider(names_from = iso2, values_from = pref_reported) %>%
+  print(n = Inf)
+
+## ---- (B) balanced-dyad trend: hold recipient-donor composition fixed ----
+## Rebuild tau for all years, then keep ONLY (iso1, donor) dyads present in
+## EVERY year. If the rise in the preferential signal is policy (deepening
+## EPAs) it survives; if it was coverage thickening, it flattens.
+years   <- c(2010, 2012, 2015, 2018, 2020, 2021)   # start at 2010 (see part A)
+years   <- years[years %in% unique(teti$year)]
+tau_all <- map_dfr(years, build_tau_year)
+
+n_years <- length(years)
+balanced_dyads <- tau_all %>%
+  distinct(iso1, donor, year) %>%
+  count(iso1, donor) %>%
+  filter(n == n_years) %>%
+  dplyr::select(iso1, donor)
+
+tau_bal <- tau_all %>% semi_join(balanced_dyads, by = c("iso1", "donor"))
+
+cat("\n[B] dyads total:", n_distinct(paste(tau_all$iso1, tau_all$donor)),
+    "| balanced (in all", n_years, "years):", nrow(balanced_dyads), "\n")
+
+## within-recipient cross-donor SD, balanced panel, both channels
+trend_bal <- tau_bal %>%
+  group_by(iso1, year) %>%
+  summarise(sd_mfn = sd(tau_mfn), sd_eff = sd(tau_eff),
+            sd_pref = sd(pref_margin), .groups = "drop") %>%
+  group_by(year) %>%
+  summarise(med_sd_mfn  = median(sd_mfn,  na.rm = TRUE),
+            med_sd_eff  = median(sd_eff,  na.rm = TRUE),
+            med_sd_pref = median(sd_pref, na.rm = TRUE), .groups = "drop")
+cat("\n=== (B) BALANCED-DYAD channel spread (compare to full-sample table) ===\n")
+print(trend_bal)
+
+## balanced donor-margin trend (does the EU-vs-JPN/USA gap hold up?)
+cat("\n=== (B2) balanced median preferential margin by donor ===\n")
+tau_bal %>%
+  group_by(year, donor) %>%
+  summarise(med_pref = median(pref_margin, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = donor, values_from = med_pref) %>%
+  print(n = Inf)
+```
+
+```{r}
+# Build the concession variable (dyad-year panel):
+tariff_years <- sort(unique(teti$year))
+tariff_years <- tariff_years[tariff_years >= 2006 & tariff_years <= 2021]
+
+concession_panel <- map_dfr(tariff_years, build_tau_year) %>%
+  transmute(
+    recipient = iso1,
+    donor,
+    year,
+    tau_mfn,                       # composition-only (robustness layer)
+    tau_eff,                       # composition + preference (effective wall)
+    pref_margin                    # negotiated, discriminatory concession (headline)
+  ) %>%
+  arrange(recipient, donor, year)
+
+cat("panel rows:", nrow(concession_panel),
+    "| dyads:", n_distinct(paste(concession_panel$recipient, concession_panel$donor)),
+    "| years:", min(concession_panel$year), "-", max(concession_panel$year), "\n")
+
+View(concession_panel)
+```
+
+```{r}
+write_csv(concession_panel, here::here("data/processed/concession_panel_2006_2021.csv"))
+```
+
+### Policy concessions:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+tariffs <- read_csv(here::here("data/raw/aft-bargaining-power/tariffsPairs_88_21_vbeta1-2024-12.csv"))
+View(tariffs)
+```
+
+```{r}
+donor_iso3 <- tibble::tribble(
+  ~iso2,  ~DonorName,
+  "FRA",  "France",
+  "DEU",  "Germany",
+  "JPN",  "Japan",
+  "GBR",  "United Kingdom",
+  "USA",  "United States"
+)
+```
+
+```{r}
+# Build the dyad-year tariff (recipient's tariff on the donor's goods)
+tariff_dyad <- tariffs %>%
+  inner_join(donor_iso3, by = "iso2") %>%
+  filter(year >= 2006, year <= 2021) %>%
+  transmute(
+    recip_iso3 = iso1,
+    DonorName,
+    year,
+    eff_tariff    = tariff,     # primary: simple-average effectively-applied
+    eff_tariff_pk = tariff95,   # robustness: peak-trimmed variant
+    mfn_rate      = mfn         # for the preference-margin option (step 3)
+  )
+```
+
+```{r}
+# Merge onto CRS_Data (idempotent), carry 2021 -> 2022/23, build the DV
+CRS_Data <- CRS_Data %>%
+  dplyr::select(-any_of(c("eff_tariff", "eff_tariff_pk", "mfn_rate",
+                   "trade_concession", "preference_margin"))) %>%
+  filter(!str_detect(RecipientName, "regional|unspecified|Ex-Yugoslavia")) %>%
+  mutate(recip_iso3 = countrycode(RecipientName, "country.name", "iso3c",
+                                  custom_match = c(Kosovo = "KSV", Micronesia = "FSM")),
+         Year_int   = as.integer(Year)) %>%
+  filter(!is.na(recip_iso3)) %>%
+  left_join(tariff_dyad, by = c("recip_iso3", "DonorName", "Year_int" = "year")) %>%
+  group_by(DonorName, RecipientName) %>%
+  arrange(Year_int, .by_group = TRUE) %>%
+  tidyr::fill(eff_tariff, eff_tariff_pk, mfn_rate, .direction = "downup") %>%
+  ungroup() %>%
+  mutate(trade_concession  = -eff_tariff,
+         preference_margin =  mfn_rate - eff_tariff)
+```
+
+```{r}
+# Coverage checks
+covered <- unique(tariff_dyad$recip_iso3)
+length(covered)
+length(unique(CRS_Data$recip_iso3))
+CRS_Data %>%
+  mutate(cov = recip_iso3 %in% covered) %>%
+  summarise(share_dyad_years = mean(cov),
+            share_of_AfT     = sum(USD_Disbursement[cov], na.rm = TRUE) /
+                               sum(USD_Disbursement, na.rm = TRUE))
+summary(CRS_Data$eff_tariff)
+mean(is.na(CRS_Data$eff_tariff))
+```
+
+```{r}
+uncovered <- setdiff(unique(CRS_Data$recip_iso3), unique(tariff_dyad$recip_iso3))
+length(uncovered)
+
+# GTD importer codes that didn't match a recipient (watch for alt codes, e.g. Kosovo = XKX)
+setdiff(sort(unique(tariff_dyad$recip_iso3)), unique(CRS_Data$recip_iso3))
+
+# top uncovered recipients by AfT
+CRS_Data %>% filter(recip_iso3 %in% uncovered) %>%
+  group_by(RecipientName) %>%
+  summarise(AfT = sum(USD_Disbursement, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(AfT)) %>% print(n = 20)
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Total reserves in months of imports (recipient):
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+total_reserves <- read_csv(here::here("data/raw/aft-bargaining-power/Total reserves in months of imports.csv"))
+View(total_reserves)
+```
+
+```{r}
+total_reserves <- total_reserves %>%
+  dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
+```
+
+```{r}
+total_reserves <- total_reserves %>%
+  pivot_longer(cols = !(`Country Name`),
+               names_to = "Year",
+               values_to = "total_reserves")
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_reserves <- unique(total_reserves$`Country Name`)
+
+in_merged_not_in_reserves <- setdiff(unique_merged, unique_reserves)
+in_reserves_not_in_merged <- setdiff(unique_reserves, unique_merged)
+
+print("Values in merged data but not in reserves data:")
+print(in_merged_not_in_reserves)
+
+#print("Values in reserves data but not in merged data:")
+#print(in_reserves_not_in_merged)
+```
+
+```{r}
+total_reserves <- total_reserves %>%
+  mutate(`Country Name` = case_when(
+    `Country Name` == "China" ~ "China (People's Republic of)",
+    `Country Name` == "Congo, Rep." ~ "Congo",
+    `Country Name` == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    `Country Name` == "Korea, Dem. People's Rep." ~ "Democratic People's Republic of Korea",
+    `Country Name` == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    `Country Name` == "Egypt, Arab Rep." ~ "Egypt",
+    `Country Name` == "Gambia, The" ~ "Gambia",
+    `Country Name` == "Iran, Islamic Rep." ~ "Iran",
+    `Country Name` == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    `Country Name` == "Lao PDR" ~ "Lao People's Democratic Republic",
+    `Country Name` == "St. Lucia" ~ "Saint Lucia",
+    `Country Name` == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    `Country Name` == "Somalia, Fed. Rep." ~ "Somalia",
+    `Country Name` == "Turkiye" ~ "Türkiye",
+    `Country Name` == "Venezuela, RB" ~ "Venezuela",
+    `Country Name` == "West Bank and Gaza" ~ "West Bank and Gaza Strip",
+    `Country Name` == "Yemen, Rep." ~ "Yemen",
+    `Country Name` == "Micronesia, Fed. Sts." ~ "Micronesia",
+    TRUE ~ `Country Name`
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(total_reserves, by = c("RecipientName" = "Country Name", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### GDP growth (recipient):
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+GDP_growth <- read_csv(here::here("data/raw/aft-bargaining-power/GDP growth.csv"))
+View(GDP_growth)
+```
+
+```{r}
+GDP_growth <- GDP_growth %>%
+  dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
+```
+
+```{r}
+GDP_growth <- GDP_growth %>%
+  pivot_longer(cols = !(`Country Name`),
+               names_to = "Year",
+               values_to = "gdp_growth")
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_growth <- unique(GDP_growth$`Country Name`)
+
+in_merged_not_in_growth <- setdiff(unique_merged, unique_growth)
+in_growth_not_in_merged <- setdiff(unique_growth, unique_merged)
+
+print("Values in growth data but not in reserves data:")
+print(in_merged_not_in_growth)
+
+#print("Values in growth data but not in merged data:")
+#print(in_growth_not_in_merged)
+```
+
+```{r}
+GDP_growth <- GDP_growth %>%
+  mutate(`Country Name` = case_when(
+    `Country Name` == "China" ~ "China (People's Republic of)",
+    `Country Name` == "Congo, Rep." ~ "Congo",
+    `Country Name` == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    `Country Name` == "Korea, Dem. People's Rep." ~ "Democratic People's Republic of Korea",
+    `Country Name` == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    `Country Name` == "Egypt, Arab Rep." ~ "Egypt",
+    `Country Name` == "Gambia, The" ~ "Gambia",
+    `Country Name` == "Iran, Islamic Rep." ~ "Iran",
+    `Country Name` == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    `Country Name` == "Lao PDR" ~ "Lao People's Democratic Republic",
+    `Country Name` == "St. Lucia" ~ "Saint Lucia",
+    `Country Name` == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    `Country Name` == "Somalia, Fed. Rep." ~ "Somalia",
+    `Country Name` == "Turkiye" ~ "Türkiye",
+    `Country Name` == "Venezuela, RB" ~ "Venezuela",
+    `Country Name` == "West Bank and Gaza" ~ "West Bank and Gaza Strip",
+    `Country Name` == "Yemen, Rep." ~ "Yemen",
+    `Country Name` == "Micronesia, Fed. Sts." ~ "Micronesia",
+    TRUE ~ `Country Name`
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(GDP_growth, by = c("RecipientName" = "Country Name", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### External debt stocks (recipient):
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+external_debt <- read_csv(here::here("data/raw/aft-bargaining-power/External debt stocks.csv"))
+View(external_debt)
+```
+
+```{r}
+external_debt <- external_debt %>%
+  dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
+```
+
+```{r}
+external_debt <- external_debt %>%
+  pivot_longer(cols = !(`Country Name`),
+               names_to = "Year",
+               values_to = "external_debt")
+```
+
+```{r}
+unique_merged <- unique(CRS_Data$RecipientName)
+unique_debt <- unique(external_debt$`Country Name`)
+
+in_merged_not_in_debt <- setdiff(unique_merged, unique_debt)
+in_debt_not_in_merged <- setdiff(unique_debt, unique_merged)
+
+print("Values in debt data but not in reserves data:")
+print(in_merged_not_in_debt)
+
+#print("Values in debt data but not in merged data:")
+#print(in_debt_not_in_merged)
+```
+
+```{r}
+external_debt <- external_debt %>%
+  mutate(`Country Name` = case_when(
+    `Country Name` == "China" ~ "China (People's Republic of)",
+    `Country Name` == "Congo, Rep." ~ "Congo",
+    `Country Name` == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+    `Country Name` == "Korea, Dem. People's Rep." ~ "Democratic People's Republic of Korea",
+    `Country Name` == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+    `Country Name` == "Egypt, Arab Rep." ~ "Egypt",
+    `Country Name` == "Gambia, The" ~ "Gambia",
+    `Country Name` == "Iran, Islamic Rep." ~ "Iran",
+    `Country Name` == "Kyrgyz Republic" ~ "Kyrgyzstan",
+    `Country Name` == "Lao PDR" ~ "Lao People's Democratic Republic",
+    `Country Name` == "St. Lucia" ~ "Saint Lucia",
+    `Country Name` == "St. Vincent and the Grenadines" ~ "Saint Vincent and the Grenadines",
+    `Country Name` == "Somalia, Fed. Rep." ~ "Somalia",
+    `Country Name` == "Turkiye" ~ "Türkiye",
+    `Country Name` == "Venezuela, RB" ~ "Venezuela",
+    `Country Name` == "West Bank and Gaza" ~ "West Bank and Gaza Strip",
+    `Country Name` == "Yemen, Rep." ~ "Yemen",
+    `Country Name` == "Micronesia, Fed. Sts." ~ "Micronesia",
+    TRUE ~ `Country Name`
+  ))
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  left_join(external_debt, by = c("RecipientName" = "Country Name", "Year"))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+### Filtering out non-ODA eligible countries:
+
+```{r}
+oda_eligible <- c("Afghanistan", "Angola", "Bangladesh", "Benin", "Burkina Faso", "Burundi", "Cambodia", "Central African Republic", "Chad", "Comoros", "Democratic Republic of the Congo", "Djibouti", "Eritrea", "Ethiopia", "Gambia", "Guinea", "Guinea-Bissau", "Haiti", "Kiribati", "Lao People's Democratic Republic", "Lesotho", "Liberia", "Madagascar", "Malawi", "Mali", "Mauritania", "Mozambique", "Myanmar", "Nepal", "Niger", "Rwanda", "Sao Tome and Principe", "Senegal", "Sierra Leone", "Solomon Islands", "Somalia", "South Sudan", "Sudan", "Tanzania", "Timor-Leste", "Togo", "Tuvalu", "Uganda", "Yemen", "Zambia", "Democratic People's Republic of Korea", "Syrian Arab Republic", "Algeria", "Bhutan", "Bolivia", "Cabo Verde", "Cameroon", "Congo", "Côte d'Ivoire", "Egypt", "Eswatini", "Ghana", "Honduras", "India", "Iran", "Jordan", "Kenya", "Kyrgyzstan", "Lebanon", "Micronesia", "Mongolia", "Morocco", "Nicaragua", "Pakistan", "Papua New Guinea", "Philippines", "Samoa", "Sri Lanka", "Tajikistan", "Tokelau", "Tunisia", "Ukraine", "Uzbekistan", "Vanuatu", "Viet Nam", "Zimbabwe", "Albania", "Argentina", "Armenia", "Azerbaijan", "Belarus", "Belize", "Bosnia and Herzegovina", "Botswana", "Brazil", "China (People's Republic of)", "Colombia", "Costa Rica", "Cuba", "Dominica", "Dominican Republic", "Ecuador", "El Salvador", "Equatorial Guinea", "Fiji", "Gabon", "Georgia", "Grenada", "Guatemala", "Guyana", "Indonesia", "Iraq", "Jamaica", "Kazakhstan", "Kosovo", "Libya", "Malaysia", "Maldives", "Marshall Islands", "Mauritius", "Mexico", "Moldova", "Montenegro", "Montserrat", "Namibia", "Nauru", "Niue", "North Macedonia", "Palau", "Panama", "Paraguay", "Peru", "Saint Helena", "Saint Lucia", "Saint Vincent and the Grenadines", "Serbia", "South Africa", "Suriname", "Thailand", "Tonga", "Türkiye", "Turkmenistan", "Venezuela", "Wallis and Futuna", "West Bank and Gaza Strip", "Nigeria")
+```
+
+```{r}
+oda_eligible <- sort(oda_eligible)
+print(oda_eligible)
+```
+
+```{r}
+non_eligible <- CRS_Data %>%
+  filter(!RecipientName %in% oda_eligible) %>%
+  distinct(RecipientName)
+
+non_eligible
+```
+
+```{r}
+CRS_Data <- CRS_Data %>%
+  filter(RecipientName %in% oda_eligible)
+```
+
+```{r}
+print(unique(CRS_Data$RecipientName))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
+```
+
+```{r}
+number_recipients <- unique(CRS_Data$RecipientName)
+length(number_recipients)
+```
+
+
+
+## Descriptive stats:
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+```
+
+```{r}
+CRS_2006 <- CRS_2006 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2007 <- CRS_2007 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2008 <- CRS_2008 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2009 <- CRS_2009 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2010 <- CRS_2010 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2011 <- CRS_2011 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2012 <- CRS_2012 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2013 <- CRS_2013 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2014 <- CRS_2014 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2015 <- CRS_2015 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2016 <- CRS_2016 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2017 <- CRS_2017 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2018 <- CRS_2018 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2019 <- CRS_2019 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2020 <- CRS_2020 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2021 <- CRS_2021 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2022 <- CRS_2022 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+
+CRS_2023 <- CRS_2023 %>%
+  dplyr::select(DonorName, Year, USD_Disbursement, SectorName, Aid_T)
+```
+
+```{r}
+CRS_Data4 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+CRS_Data4 <- CRS_Data4 %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants")) %>%
+  group_by(Year) %>%
+  summarise(
+    USD_Disbursement = sum(USD_Disbursement, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+CRS_Data5 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+CRS_Data5 <- CRS_Data5 %>%
+  group_by(Year) %>%
+  summarise(
+    USD_Disbursement = sum(USD_Disbursement, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+total_2006 <- CRS_Data4 %>%
+  filter(Year == "2006") %>%
+  summarise(total = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total)
+
+total_2023 <- CRS_Data4 %>%
+  filter(Year == "2023") %>%
+  summarise(total = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total)
+
+percent_increase <- ((total_2023 - total_2006) / total_2006) * 100
+
+total_2006
+total_2023
+percent_increase
+```
+
+```{r}
+total_2006 <- CRS_Data5 %>%
+  filter(Year == "2006") %>%
+  summarise(total = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total)
+
+total_2023 <- CRS_Data5 %>%
+  filter(Year == "2023") %>%
+  summarise(total = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total)
+
+total_2006
+total_2023
+```
+
+```{r}
+percent_increase2006 <- (23045.06 * 100)/172756.1
+percent_increase2023 <- (101190.7 * 100)/410443.7
+
+percent_increase2006
+percent_increase2023
+```
+
+```{r}
+# Percent of AfT in 2023 that is project-based:
+
+CRS_Data6 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+
+CRS_Data6 <- CRS_Data6 %>%
+  filter(SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants"))# %>%
+#  filter(Year %in% "2023")
+```
+
+```{r}
+sum(is.na(CRS_Data6$Aid_T))
+nrow(CRS_Data6)
+```
+
+```{r}
+CRS_Data6 <- CRS_Data6 %>%
+  group_by(Year, Aid_T) %>%
+  summarise(
+    USD_Disbursement = sum(USD_Disbursement, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+CRS_Data6 <- CRS_Data6 %>%
+    mutate(Aid_T=replace_na(Aid_T, "Not defined"))
+```
+
+```{r}
+print(unique(CRS_Data6$Aid_T))
+```
+
+```{r}
+CRS_Data6 <- CRS_Data6 %>%
+  mutate(Aid_T = case_when(
+    Aid_T == "A02" ~ "Budget support",
+    Aid_T == "B01" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "C01" ~ "Project-type interventions",
+    Aid_T == "D02" ~ "Experts and other technical assistance",
+    Aid_T == "E01" ~ "Scholarships and student costs in donor countries",
+    Aid_T == "B03" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "B04" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "D01" ~ "Experts and other technical assistance",
+    Aid_T == "G01" ~ "Administrative costs not included elsewhere",
+    Aid_T == "H01" ~ "Other in-donor expenditures",
+    Aid_T == "E02" ~ "Scholarships and student costs in donor countries",
+    Aid_T == "A01" ~ "Budget support",
+    Aid_T == "B031" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "B032" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "B033" ~ "Core contributions and pooled programmes and funds",
+    Aid_T == "B05" ~ "Core contributions and pooled programmes and funds",
+    TRUE ~ Aid_T
+  ))      
+```
+
+```{r}
+bar_colors <- c(
+  "Budget support" = "#ACD4EC",
+  "Core contributions and pooled programmes and funds" = "#6E9FC6",
+  "Project-type interventions" = "#d6604d",
+  "Experts and other technical assistance" = "#4D7EAB",
+  "Scholarships and student costs in donor countries" = "#2E5B88",
+  "Not defined" = "lightgrey",
+  "Administrative costs not included elsewhere" = "#B9DDF1",
+  "Other in-donor expenditures" = "#CFDCEF"
+)  
+
+modality_plot <- ggplot(CRS_Data6,
+                    aes(x = Year, y = USD_Disbursement, fill = Aid_T)) +
+                    geom_col(position = "stack") +
+                    scale_fill_manual(values = bar_colors) +
+                    labs(
+                      x = "",
+                      y = "Total ODA disbursements (USD)",
+                      fill = "",
+                      title = "Total ODA disbursements by modality and year"
+                    ) +
+                    theme_minimal()
+
+ggsave(
+  here::here("output/figures/modality_plot.png"),
+  modality_plot,
+  width  = 13,
+  height = 9,
+  dpi    = 400
+)
+```
+
+```{r}
+modality_plot <- ggplot(aes(x = Year, y = ))
+```
+
+```{r}
+# Total AfT in 2023:
+total_aft_2023 <- 3046.92289 + 12194.25748 + 413.99074 + 1878.08738 + 246.66033 + 660.42240 + 135.82669 + 66.20454 + 79615.50447 + 169.36709 + 1185.62570 + 43.19297 + 16.30620 + 15.42903 + 4.02969
+
+total_aft_2023_withNA <- 3046.92289 + 12194.25748 + 413.99074 + 1878.08738 + 246.66033 + 660.42240 + 135.82669 + 66.20454 + 79615.50447 + 169.36709 + 1185.62570 + 43.19297 + 16.30620 + 15.42903 + 4.02969 + 1498.85596
+
+# Percent that is project-based:
+(79615.50447/total_aft_2023)*100
+(79615.50447/total_aft_2023_withNA)*100
+```
+
+```{r}
+CRS_Data7 <- bind_rows(CRS_2006, CRS_2007, CRS_2008, CRS_2009, CRS_2010, CRS_2011, CRS_2012, CRS_2013, CRS_2014, CRS_2015, CRS_2016, CRS_2017, CRS_2018, CRS_2019, CRS_2020, CRS_2021, CRS_2022, CRS_2023)
+```
+
+```{r}
+aft_2023 <- CRS_Data7 %>%
+  filter(
+    Year == 2023,
+    SectorName %in% c("III.1.a. Agriculture", "II.1. Transport & Storage", "III.3.a. Trade Policies & Regulations", "II.4. Banking & Financial Services", "III.1.b. Forestry", "II.2. Communications", "II.3.b. Energy generation, renewable sources", "II.5. Business & Other Services", "III.2.a. Industry", "III.1.c. Fishing", "III.3.b. Tourism", "III.2.b. Mineral Resources & Mining", "II.3.c. Energy generation, non-renewable sources", "II.3.a. Energy Policy", "II.3.e. Nuclear energy plants", "III. Production Sectors", "II. Economic Infrastructure & Services", "III.2.c. Construction", "III.1. Agriculture, Forestry, Fishing", "II.3. Energy", "III.2. Industry, Mining, Construction", "II.3.d. Hybrid energy plants"
+    )
+  )
+
+View(aft_2023)
+```
+
+```{r}
+top_donors <- c("France", "Germany", "Japan", "United Kingdom", "United States")
+
+# Percent of total AfT disbursed by top 5 donors:
+aft_total_2023 <- aft_2023 %>%
+  summarise(total_aft = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total_aft)
+
+aft_top5_2023 <- aft_2023 %>%
+  filter(DonorName %in% top_donors) %>%
+  summarise(top5_aft = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(top5_aft)
+
+pct_total_aft_top5 <- 100 * aft_top5_2023 / aft_total_2023
+print(pct_total_aft_top5)
+```
+
+```{r}
+bilateral_donors <- c("Belgium", "Netherlands", "Luxembourg", "Austria", "Japan", "Italy", "Finland", "Germany", "Slovak Republic", "Portugal", "Poland", "United States", "Canada", "Greece", "Norway", "Estonia", "Lithuania", "Switzerland", "Malta", "Türkiye", "United Arab Emirates", "United Kingdom", "Kazakhstan", "France", "Korea", "New Zealand", "Denmark", "Iceland", "Ireland", "Hungary", "Spain", "Sweden", "Czechia", "Australia", "Israel", "Slovenia", "Liechtenstein", "Chinese Taipei", "Azerbaijan", "Kuwait", "Monaco", "Bulgaria", "Saudi Arabia", "Qatar", "Romania", "Latvia", "Croatia")
+
+aft_bilateral_2023 <- aft_2023 %>%
+  filter(DonorName %in% bilateral_donors)
+
+aft_bilateral_total <- aft_bilateral_2023 %>%
+  summarise(total_bilateral = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(total_bilateral)
+
+aft_bilateral_top5 <- aft_bilateral_2023 %>%
+  filter(DonorName %in% top_donors) %>%
+  summarise(top5_bilateral = sum(USD_Disbursement, na.rm = TRUE)) %>%
+  pull(top5_bilateral)
+
+pct_bilateral_aft_top5 <- 100 * aft_bilateral_top5 / aft_bilateral_total
+
+print(pct_bilateral_aft_top5)
+```
+
+```{r}
+# Increase of project-based aid relative to other modalities:
+library(readxl)
+CRS_by_modality <- read_excel(here::here("data/raw/aft-bargaining-power/CRS by modality.xlsx"))
+View(CRS_by_modality)
+```
+
+```{r}
+CRS_by_modality <- CRS_by_modality %>%
+  select(Modality7, TIME_PERIOD, OBS_VALUE)
+```
+
+```{r}
+CRS_by_modality <- CRS_by_modality %>%
+  mutate(Modality7 = case_when(
+    Modality7 == "Other in-donor expenditures" ~ "Other",
+    Modality7 == "Scholarships and student costs in donor countries" ~ "Other",
+    Modality7 == "Administrative costs not included elsewhere" ~ "Other",
+    TRUE ~ Modality7
+  ))
+```
+
+```{r}
+oda_by_year_modality <- CRS_by_modality %>%
+  group_by(TIME_PERIOD, Modality7) %>%
+  summarise(
+    total_oda = sum(OBS_VALUE, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r, fig.width = 10, dpi = 1000}
+bar_colors <- c(
+  "Budget support" = "#03045e",
+  "Core contributions and pooled programmes and funds" = "#0077b6",
+  "Debt relief" = "#00b4d8",
+  "Experts and other technical assistance" = "#90e0ef",
+  "Other" = "#caf0f8",
+  "Project-type interventions" = "lightgrey"
+)
+
+ggplot(oda_by_year_modality,
+       aes(x = TIME_PERIOD, y = total_oda, fill = Modality7)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = bar_colors) +
+  labs(
+    x = "",
+    y = "Total ODA disbursements (USD)",
+    fill = "",
+    title = "Total ODA disbursements by modality and year"
+  ) +
+  theme_minimal()
+```
+
+
+## Analysis:
+
+### Data preparation:
+
+```{r}
+colnames(CRS_Data)
+```
+
+```{r warning=FALSE}
+# Coerce raw columns to numeric:
+
+num_cols <- c("USD_Disbursement", "Other_AfT", "COL_FR","COL_UK","COL_US","COL_JP","distwces",
+              "Foreign_pop", "VA", "Cost_Trade", "cc","pv","rq","rl","ge", "external_debt", "total_reserves", "gdp_growth")
+CRS_Data <- CRS_Data %>%
+  mutate(across(all_of(intersect(num_cols, names(CRS_Data))),
+                ~ suppressWarnings(as.numeric(.))))
+```
+
+```{r warning=FALSE}
+# DV + dyadic transformation:
+
+CRS_Data <- CRS_Data %>%
+  mutate(
+    log_Total_AfT = log1p(USD_Disbursement),
+    log_Other_AfT = log1p(Other_AfT), 
+    across(c(COL_FR, COL_UK, COL_US, COL_JP), ~ ifelse(is.na(.), 0, .)),
+    col_history = COL_FR + COL_UK + COL_US + COL_JP,
+    proximity = -log(distwces),
+    log_Foreign = log1p(Foreign_pop),
+    log_VA          = log1p(VA),
+    VA_share = VA / total_exports_donor,
+    Cost_Trade_inv = -Cost_Trade,
+  ) %>%
+  arrange(DonorName, RecipientName, Year) %>%
+  group_by(DonorName, RecipientName) %>%
+  mutate(across(c(log_Other_AfT, total_reserves, gdp_growth, external_debt,
+                  total_asym, VA, VA_share),
+                ~ lag(.), .names = "{.col}_lag")) %>%
+  ungroup()
+```
+
+```{r}
+winsor_top <- function(x, p = 0.99) pmin(x, quantile(x, p, na.rm = TRUE))
+
+CRS_Data <- CRS_Data %>%
+  mutate(
+    external_debt_lag  = winsor_top(external_debt_lag,  0.99),
+    total_reserves_lag = winsor_top(total_reserves_lag, 0.99)
+  )
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data2.xlsx"))
+```
+
+### Equal weighting (formative) construct building:
+
+```{r}
+# EBT — Bargaining power (alpha) construction
+# Formative, equal-weighted composite of four dimensions.
+#
+# Outside options are NOT folded into alpha: in the SUR,
+#   log_Other_AfT_lag      enters as the recipient threat point d_R (+)
+#   donor_threat_dyad_lag  enters as the donor threat point   d_D (-)
+# alpha is the relative-power weight; the threat points are separate.
+#
+# Two urgency specs are built:
+#   alpha_core  = urgency from reserves / growth / debt only  (PRIMARY)
+#   alpha_ext   = urgency also including eci + Cost_Trade      (ROBUSTNESS)
+
+## z-score that ignores NAs and leaves NA positions as NA
+z <- function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+```
+
+```{r}
+## Extra indicators for the urgency robustness:
+CRS_Data <- CRS_Data %>%
+  arrange(DonorName, RecipientName, Year_int) %>%
+  group_by(DonorName, RecipientName) %>%
+  mutate(
+    eci_lag            = lag(eci),
+    Cost_Trade_inv_lag = lag(Cost_Trade_inv)
+  ) %>%
+  ungroup()
+```
+
+```{r}
+## Oriented z-scores (all signed so higher = higher recipient power):
+CRS_Data <- CRS_Data %>%
+  mutate(
+    # urgency / crisis
+    z_reserves = z(total_reserves_lag),        # +
+    z_growth   = z(gdp_growth_lag),            # +
+    z_debt     = -z(external_debt_lag),        # -  (debt = distress)
+    z_eci      = z(eci_lag),                   # +  (variant only)
+    z_cost     = z(Cost_Trade_inv_lag),        # +  (variant only; already inverted)
+    # geopolitical stake (donor interest -> worse donor outside option)
+    z_foreign  = z(log_Foreign),               # +
+    z_agree    = z(agree),                     # +
+    z_prox     = z(proximity),                 # +
+    z_col      = z(col_history),               # +
+    # commercial asymmetric dependence
+    z_asym     = z(total_asym_lag),            # +
+    z_vashare  = z(VA_share_lag),              # +
+    # institutional capacity (reflective WGI block)
+    z_cc = z(cc), z_ge = z(ge), z_pv = z(pv), z_rq = z(rq)   # +
+  )
+```
+
+```{r}
+## Dimension scores: mean of oriented z-scores (use what's present)
+##  na.rm = TRUE so a dimension survives partial missingness; this matters
+##  most for commercial (total_asym + VA_share both have gaps).
+CRS_Data <- CRS_Data %>%
+  mutate(
+    dim_urgency_core = rowMeans(cbind(z_reserves, z_growth, z_debt), na.rm = TRUE),
+    dim_urgency_ext  = rowMeans(cbind(z_reserves, z_growth, z_debt, z_eci, z_cost), na.rm = TRUE),
+    dim_geo          = rowMeans(cbind(z_foreign, z_agree, z_prox, z_col), na.rm = TRUE),
+    dim_comm         = rowMeans(cbind(z_asym, z_vashare), na.rm = TRUE),
+    dim_inst         = rowMeans(cbind(z_cc, z_ge, z_pv, z_rq), na.rm = TRUE)
+  ) %>%
+  mutate(across(starts_with("dim_"), ~ ifelse(is.nan(.), NA, .)))   # all-NA row -> NA
+```
+
+```{r}
+## Re-standardise each dimension before averaging into alpha
+##  Averaging z-scores shrinks variance unevenly across dimensions, so a raw
+##  cross-dimension mean would weight the higher-variance dimensions more.
+##  Re-standardising each dimension to SD 1 is what makes the final average a
+##  genuine EQUAL weighting of the four dimensions.
+CRS_Data <- CRS_Data %>%
+  mutate(
+    s_urgency_core = z(dim_urgency_core),
+    s_urgency_ext  = z(dim_urgency_ext),
+    s_geo          = z(dim_geo),
+    s_comm         = z(dim_comm),
+    s_inst         = z(dim_inst)
+  )
+```
+
+```{r}
+## alpha = equal-weight mean of the four standardised dimensions:
+CRS_Data <- CRS_Data %>%
+  mutate(
+    n_dims_core = rowSums(!is.na(cbind(s_urgency_core, s_geo, s_comm, s_inst))),
+    n_dims_ext  = rowSums(!is.na(cbind(s_urgency_ext,  s_geo, s_comm, s_inst))),
+    alpha_core  = rowMeans(cbind(s_urgency_core, s_geo, s_comm, s_inst), na.rm = TRUE),
+    alpha_ext   = rowMeans(cbind(s_urgency_ext,  s_geo, s_comm, s_inst), na.rm = TRUE)
+  ) %>%
+  mutate(across(c(alpha_core, alpha_ext), ~ ifelse(is.nan(.), NA, .)))
+```
+
+```{r}
+## Diagnostics:
+cat("\n--- Dimension coverage per row (core alpha) ---\n")
+print(table(CRS_Data$n_dims_core))
+cat("Share of rows with all four dimensions:",
+    round(mean(CRS_Data$n_dims_core == 4, na.rm = TRUE), 3), "\n")
+
+cat("\n--- Dimension inter-correlations (modest = healthy formative) ---\n")
+print(round(cor(CRS_Data[, c("s_urgency_core","s_geo","s_comm","s_inst")],
+                use = "pairwise.complete.obs"), 2))
+
+cat("\n--- alpha_core summary ---\n")
+print(summary(CRS_Data$alpha_core))
+
+cat("\n--- alpha vs outcomes (CIRCULARITY CHECK — want modest |r|) ---\n")
+print(round(cor(cbind(alpha   = CRS_Data$alpha_core,
+                      flow    = log1p(CRS_Data$USD_Disbursement),
+                      channel = CRS_Data$ChannelBalance,
+                      trade   = CRS_Data$trade_concession),
+                use = "pairwise.complete.obs"), 2))
+
+cat("\n--- core vs extended alpha (should be very highly correlated) ---\n")
+print(round(cor(CRS_Data$alpha_core, CRS_Data$alpha_ext,
+                use = "pairwise.complete.obs"), 3))
+```
+
+```{r}
+summary(CRS_Data$USD_Disbursement)
+sum(CRS_Data$USD_Disbursement < 0, na.rm = TRUE)
+```
+
+```{r}
+# Floor AfT flows at 0 to get rid of 7 negative flows:
+CRS_Data$flow_log <- log1p(pmax(CRS_Data$USD_Disbursement, 0))
+```
+
+```{r}
+write_xlsx(CRS_Data, here::here("data/processed/CRS_Data3.xlsx"))
+```
+
+### SUR specification:
+
+```{r}
+# ============================================================
+# EBT — Between-dyad SUR of the three negotiation outcomes
+#
+# Three jointly-estimated equations:
+#   flow     = flow_log         (aid size)
+#   channel  = ChannelBalance   (design command)
+#   trade    = trade_concession (policy concession; = -eff_tariff)
+#
+# Regressors (the Nash structure):
+#   alpha_z  relative bargaining power           (the four-dimension composite)
+#   dR_z     recipient threat point  log_Other_AfT_lag      (+)
+#   dD_z     donor threat point      donor_threat_dyad_lag  (-)
+#   Year_f   year fixed effects
+#
+# NO dyad FE: alpha is ~entirely between-dyad, so dyad FE collapse the system.
+# Identification is off cross-dyad variation, which is the theoretically
+# relevant variation (bargaining power is a structural feature of a dyad).
+# ============================================================
+
+# Estimation frame: four-complete alpha + all model vars present
+est <- CRS_Data %>%
+  filter(n_dims_core == 4,
+         !is.na(alpha_core), !is.na(flow_log), !is.na(ChannelBalance),
+         !is.na(preference_margin),
+         !is.na(log_Other_AfT_lag), !is.na(donor_threat_dyad_lag)) %>%
+  mutate(Year_f  = droplevels(factor(Year_int)),
+         alpha_z = z(alpha_core),
+         dR_z    = z(log_Other_AfT_lag),
+         dD_z    = z(donor_threat_dyad_lag))
+
+cat("Estimation N:", nrow(est),
+    "| dyads:", dplyr::n_distinct(paste(est$DonorName, est$RecipientName)), "\n")
+
+# Collinearity check first:
+cat("\n--- Correlations among the three power regressors ---\n")
+print(round(cor(est[, c("alpha_z", "dR_z", "dD_z")]), 2))
+
+cat("\n--- VIFs (read the alpha_z / dR_z / dD_z rows; want well under 5) ---\n")
+print(vif(lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, data = est)))
+```
+
+```{r}
+# Descriptives:
+
+## Structural vs dynamic variance of alpha:
+bw <- est %>% group_by(DonorName, RecipientName) %>%
+  mutate(a_between = mean(alpha_core), a_within = alpha_core - a_between) %>% ungroup()
+vb <- var(bw$a_between); vw <- var(bw$a_within)
+cat("between share:", round(vb/(vb+vw), 3), "| within share:", round(vw/(vb+vw), 3), "\n")
+
+## Donor-level distribution of recipient power:
+donor_tab <- est %>%
+  group_by(DonorName, RecipientName) %>% summarise(m = mean(alpha_core), .groups="drop") %>%
+  group_by(DonorName) %>%
+  summarise(mean_alpha = round(mean(m),3), pct_below_0 = round(mean(m<0)*100,1),
+            n_dyads = n(), .groups="drop") %>% arrange(mean_alpha)
+print(donor_tab)
+
+## Figure 4:
+fig4 <- est %>% group_by(DonorName, RecipientName) %>% summarise(m = mean(alpha_core), .groups="drop")
+ggplot(fig4, aes(DonorName, m)) +
+  geom_violin(alpha = .5, colour = "grey", fill = "grey") + geom_boxplot(width = .15, outlier.size = .5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = NULL, y = "Mean recipient bargaining power (alpha)") +
+  theme_minimal(base_size = 12) + theme(legend.position = "none")
+```
+
+```{r}
+# Collinearity check + SUR + residual correlations:
+print(round(cor(est[, c("alpha_z","dR_z","dD_z")]), 2))
+print(vif(lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, data = est)))
+
+sur <- systemfit(list(
+  flow    = flow_log          ~ alpha_z + dR_z + dD_z + Year_f,
+  channel = ChannelBalance    ~ alpha_z + dR_z + dD_z + Year_f,
+  trade   = preference_margin ~ alpha_z + dR_z + dD_z + Year_f),
+  method = "SUR", data = est)
+print(summary(sur))
+print(round(cor(residuals(sur)), 3))    # <- this IS your P2(a); Table 2
+```
+
+#### Dyad cluster-bootstrap of the WHOLE pipeline  (the central inference fix):
+
+```{r}
+# Bargaining power is an estimated regressor, so honest SEs require re-estimating the PLS construct inside each resample. Cluster on dyad; keep boot_mat for the marginal-effect CIs in step 6b.
+```
+
+```{r}
+# EBT — Dyad cluster bootstrap:
+
+## build_alpha and fit_coefs now use the same dimension names as the construction (s_urgency_core, n_dims_core), z is gone from here (it's global), and fit_coefs is extended to capture the flow and channel decompositions too, so the whole of Table 4 comes out of one run with intervals:
+
+build_alpha <- function(df) {
+  df %>%
+    mutate(
+      z_reserves = z(total_reserves_lag), z_growth = z(gdp_growth_lag), z_debt = -z(external_debt_lag),
+      z_foreign = z(log_Foreign), z_agree = z(agree), z_prox = z(proximity), z_col = z(col_history),
+      z_asym = z(total_asym_lag), z_vashare = z(VA_share_lag),
+      z_cc = z(cc), z_ge = z(ge), z_pv = z(pv), z_rq = z(rq)
+    ) %>%
+    mutate(
+      dim_urgency_core = rowMeans(cbind(z_reserves, z_growth, z_debt), na.rm = TRUE),
+      dim_geo  = rowMeans(cbind(z_foreign, z_agree, z_prox, z_col), na.rm = TRUE),
+      dim_comm = rowMeans(cbind(z_asym, z_vashare), na.rm = TRUE),
+      dim_inst = rowMeans(cbind(z_cc, z_ge, z_pv, z_rq), na.rm = TRUE)
+    ) %>%
+    mutate(across(starts_with("dim_"), ~ ifelse(is.nan(.), NA, .))) %>%
+    mutate(
+      s_urgency_core = z(dim_urgency_core), s_geo = z(dim_geo), s_comm = z(dim_comm), s_inst = z(dim_inst),
+      n_dims_core = rowSums(!is.na(cbind(s_urgency_core, s_geo, s_comm, s_inst))),
+      alpha_core  = rowMeans(cbind(s_urgency_core, s_geo, s_comm, s_inst), na.rm = TRUE),
+      alpha_core  = ifelse(is.nan(alpha_core), NA, alpha_core)
+    )
+}
+
+fit_coefs <- function(df) {
+  d <- df %>%
+    filter(n_dims_core == 4,
+           !is.na(alpha_core), !is.na(flow_log), !is.na(ChannelBalance),
+           !is.na(preference_margin), !is.na(log_Other_AfT_lag), !is.na(donor_threat_dyad_lag)) %>%
+    mutate(Year_f = factor(Year_int), alpha_z = z(alpha_core),
+           dR_z = z(log_Other_AfT_lag), dD_z = z(donor_threat_dyad_lag))
+  g <- function(m, t) unname(coef(m)[t]); D <- c("s_urgency_core","s_geo","s_comm","s_inst")
+
+  mf <- lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, d)
+  mc <- lm(ChannelBalance ~ alpha_z + dR_z + dD_z + Year_f, d)
+  mt <- lm(preference_margin ~ alpha_z + dR_z + dD_z + Year_f, d)
+  df_ <- lm(flow_log          ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+  dc_ <- lm(ChannelBalance    ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+  dt_ <- lm(preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+
+  c(flow_alpha=g(mf,"alpha_z"),  flow_dR=g(mf,"dR_z"),  flow_dD=g(mf,"dD_z"),
+    chan_alpha=g(mc,"alpha_z"),  chan_dR=g(mc,"dR_z"),  chan_dD=g(mc,"dD_z"),
+    trade_alpha=g(mt,"alpha_z"), trade_dR=g(mt,"dR_z"), trade_dD=g(mt,"dD_z"),
+    flow_urg=g(df_,D[1]),  flow_geo=g(df_,D[2]),  flow_comm=g(df_,D[3]),  flow_inst=g(df_,D[4]),
+    chan_urg=g(dc_,D[1]),  chan_geo=g(dc_,D[2]),  chan_comm=g(dc_,D[3]),  chan_inst=g(dc_,D[4]),
+    trade_urg=g(dt_,D[1]), trade_geo=g(dt_,D[2]), trade_comm=g(dt_,D[3]), trade_inst=g(dt_,D[4]))
+}
+
+point <- fit_coefs(build_alpha(CRS_Data))
+
+set.seed(123); B <- 2000
+CRS_Data$dyad_id <- paste(CRS_Data$DonorName, CRS_Data$RecipientName)
+dyads <- unique(CRS_Data$dyad_id); dyad_rows <- split(seq_len(nrow(CRS_Data)), CRS_Data$dyad_id)
+K <- length(point)
+boot <- matrix(NA_real_, B, K, dimnames = list(NULL, names(point)))
+for (b in seq_len(B)) {
+  idx <- unlist(dyad_rows[sample(dyads, length(dyads), replace = TRUE)], use.names = FALSE)
+  boot[b, ] <- tryCatch(fit_coefs(build_alpha(CRS_Data[idx, ])), error = function(e) rep(NA_real_, K))
+  if (b %% 100 == 0) cat("resample", b, "of", B, "\n")
+}
+
+res <- data.frame(coef = names(point), estimate = round(point,4),
+  boot_se = round(apply(boot,2,sd,na.rm=TRUE),4),
+  ci_lo = round(apply(boot,2,quantile,.025,na.rm=TRUE),4),
+  ci_hi = round(apply(boot,2,quantile,.975,na.rm=TRUE),4))
+res$sig <- ifelse(res$ci_lo > 0 | res$ci_hi < 0, "*", "")
+print(res, row.names = FALSE)
+```
+
+```{r}
+vif(lm(preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, data = est))
+```
+#### P1 — power shapes all three outcomes simultaneously:
+
+```{r}
+# The per-equation intervals in res are the primary P1 evidence, but this is the system-level "alpha is jointly non-zero" summary of
+```
+
+```{r}
+bp_terms <- c("flow_alpha", "chan_alpha", "trade_alpha")
+V <- cov(boot[, bp_terms], use = "complete.obs")
+W <- as.numeric(t(point[bp_terms]) %*% solve(V) %*% point[bp_terms])
+cat("Joint Wald W =", round(W,2), " p =", signif(pchisq(W, length(bp_terms), lower.tail = FALSE), 3), "\n")
+```
+
+#### P2 — trade-offs, two pieces, no interaction terms:
+
+```{r}
+# P2 — two pieces, both already produced above.
+
+## Piece (a) is the residual-correlation matrix from chunk 5 (cor(residuals(sur))); the live cell is the positive flow–channel correlation, read as co-movement/complementarity, with a negative off-diagonal being the conditional trade-off.
+
+## Piece (b) is the decomposition rows of res (*_urg/geo/comm/inst), where commercial sitting below zero against geopolitical/institutional above it is the heterogeneity result. There is no quadratic marginal-effects step any more.
+```
+
+#### Breusch-Pagan test:
+
+```{r}
+R <- cor(residuals(sur)); Tn <- nrow(est)
+LM <- Tn * sum(R[lower.tri(R)]^2)
+cat("Breusch-Pagan LM =", round(LM, 1), "| df =", choose(ncol(R), 2),
+    "| p =", signif(pchisq(LM, choose(ncol(R), 2), lower.tail = FALSE), 3), "\n")
+```
+
+#### Trade-off test:
+
+```{r}
+# terciles by dyad-mean power, so each dyad sits wholly in one group
+est <- est %>%
+  group_by(DonorName, RecipientName) %>% mutate(alpha_dyad = mean(alpha_z)) %>% ungroup() %>%
+  mutate(alpha_grp = ntile(alpha_dyad, 3))          # 1 = lowest power, 3 = highest
+
+# the three residual correlations for a given data frame
+rcor <- function(d) {
+  rf <- residuals(lm(flow_log          ~ alpha_z + dR_z + dD_z + Year_f, d))
+  rc <- residuals(lm(ChannelBalance    ~ alpha_z + dR_z + dD_z + Year_f, d))
+  rt <- residuals(lm(preference_margin ~ alpha_z + dR_z + dD_z + Year_f, d))
+  R  <- cor(cbind(rf, rc, rt)); c(fc = R[1,2], ft = R[1,3], ct = R[2,3])
+}
+
+pooled_point <- rcor(est)
+grp_point    <- sapply(1:3, function(g) rcor(droplevels(filter(est, alpha_grp == g))))
+
+set.seed(123); B <- 2000
+est$dyad_id <- paste(est$DonorName, est$RecipientName)
+dyads <- unique(est$dyad_id); drows <- split(seq_len(nrow(est)), est$dyad_id)
+
+bp <- matrix(NA_real_, B, 3, dimnames = list(NULL, names(pooled_point)))
+bg <- array(NA_real_, c(B, 3, 3))
+for (b in 1:B) {
+  idx <- unlist(drows[sample(dyads, length(dyads), TRUE)], use.names = FALSE)
+  db  <- est[idx, ]
+  bp[b, ] <- tryCatch(rcor(db), error = function(e) rep(NA_real_, 3))
+  for (g in 1:3) {
+    sub <- droplevels(db[db$alpha_grp == g, ])
+    bg[b, , g] <- tryCatch(rcor(sub), error = function(e) rep(NA_real_, 3))
+  }
+  if (b %% 200 == 0) cat("resample", b, "\n")
+}
+
+ci <- function(x) quantile(x, c(.025, .975), na.rm = TRUE)
+nm <- c("flow-channel","flow-trade","channel-trade")
+
+cat("\n=== Pooled residual correlations (95% CI) ===\n")
+for (k in 1:3) cat(sprintf("  %-14s % .3f [% .3f, % .3f]%s\n", nm[k], pooled_point[k],
+  ci(bp[,k])[1], ci(bp[,k])[2], ifelse(ci(bp[,k])[1] > 0 | ci(bp[,k])[2] < 0, " *", "")))
+
+cat("\n=== By alpha tercile, with high-low difference ===\n")
+for (k in 1:3) {
+  cat(nm[k], ":\n", sep = "")
+  for (g in 1:3) cat(sprintf("  %-4s % .3f [% .3f, % .3f]\n", c("low","mid","high")[g],
+    grp_point[k,g], ci(bg[,k,g])[1], ci(bg[,k,g])[2]))
+  d <- bg[,k,3] - bg[,k,1]
+  cat(sprintf("  high-low % .3f [% .3f, % .3f]%s\n", grp_point[k,3]-grp_point[k,1],
+    ci(d)[1], ci(d)[2], ifelse(ci(d)[1] > 0 | ci(d)[2] < 0, " *", "")))
+}
+```
+
+### Discussion figures:
+
+```{r}
+res2 <- within(res, {
+  outcome <- sub("_.*", "", coef)        # text before first underscore
+  term    <- sub("^[^_]*_", "", coef)    # text after first underscore
+  sig     <- ci_lo > 0 | ci_hi < 0       # CI excludes zero
+})
+
+out_lab <- c(flow = "Aid flow (log)", chan = "Channel balance",
+             trade = "Trade (pref. margin)")
+```
+
+```{r}
+# Figure 5 — the main system (P1). Faceted by regressor with free x-scales, because the threat points are an order of magnitude larger than α and a shared scale would crush α's interval into invisibility:
+
+res_main <- subset(res2, term %in% c("alpha", "dR", "dD"))
+res_main$outcome <- factor(out_lab[res_main$outcome], levels = out_lab)
+res_main$term <- factor(res_main$term, c("alpha", "dR", "dD"),
+  c("Bargaining power (\u03b1)", "Recipient threat point", "Donor threat point"))
+
+ggplot(res_main, aes(estimate, outcome, colour = sig)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
+  facet_wrap(~ term, scales = "free_x") +
+  scale_y_discrete(limits = rev) +
+  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
+  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+# ggsave(here::here("output/figures/Figure5_system.png"), width = 9, height = 3.2, dpi = 300)
+```
+
+```{r}
+# Figure 6 — the decomposition (P2). Faceted by outcome with a shared x-scale on purpose: that's what makes the point, since commercial dependence is the only marker that crosses to the left of zero, and only in the trade panel, while geopolitical stake on trade visibly dwarfs everything else:
+
+res_dec <- subset(res2, term %in% c("urg", "geo", "comm", "inst"))
+res_dec$outcome <- factor(out_lab[res_dec$outcome], levels = out_lab)
+res_dec$term <- factor(res_dec$term, c("urg", "inst", "comm", "geo"),
+  c("Financial resilience", "Institutional capacity",
+    "Commercial dependence", "Geopolitical stake"))
+
+ggplot(res_dec, aes(estimate, term, colour = sig)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
+  facet_wrap(~ outcome) +
+  scale_y_discrete(limits = rev) +
+  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
+  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.major.y = element_blank())
+# ggsave(here::here("output/figures/Figure6_decomposition.png"), width = 9, height = 3.4, dpi = 300)
+```
+
+```{r}
+pairs_nm <- c("Flow – Channel", "Flow – Policy", "Channel – Policy")  # bg/grp_point order: fc, ft, ct
+terc_nm  <- c("Low", "Mid", "High")
+
+fig_df <- do.call(rbind, lapply(1:3, function(p) do.call(rbind, lapply(1:3, function(g) {
+  data.frame(pair = pairs_nm[p], terc = terc_nm[g],
+             est = grp_point[p, g],
+             lo  = quantile(bg[, p, g], 0.025, na.rm = TRUE),
+             hi  = quantile(bg[, p, g], 0.975, na.rm = TRUE))
+}))))
+fig_df$pair <- factor(fig_df$pair, levels = pairs_nm)
+fig_df$terc <- factor(fig_df$terc, levels = terc_nm)
+
+ggplot(fig_df, aes(terc, est, group = pair, colour = pair)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey55") +
+  geom_line(position = position_dodge(0.35), linewidth = 0.7) +
+  geom_pointrange(aes(ymin = lo, ymax = hi),
+                  position = position_dodge(0.35), size = 0.7) +
+  scale_colour_manual(values = c("Flow – Channel"   = "#6E9FC6",
+                                 "Flow – Policy"     = "#d6604d",
+                                 "Channel – Policy"  = "#ACD4EC")) +
+  labs(x = "Recipient bargaining-power tercile",
+       y = "Cross-equation residual correlation (95% CI)", colour = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(axis.title.y = element_text(size = 11),
+        axis.title.x = element_text(size = 11),
+        legend.position = "right", panel.grid.minor = element_blank())
+ ggsave(here::here("output/figures/Figure4_complementarity_gradient.png"), width = 7, height = 4.2, dpi = 300)
+```
+
+### Robustness:
+
+```{r}
+# Zeros / extensive margin (flows). Build the full dyad-year grid and run PPML, keeping zeros:
+
+all_recipients <- unique(CRS_Data$RecipientName)
+grid <- expand.grid(DonorName = c("France","Germany","Japan","United Kingdom","United States"),
+                    RecipientName = all_recipients, Year = as.character(2006:2023),
+                    stringsAsFactors = FALSE)
+CRS_full <- grid %>% left_join(CRS_Data, by = c("DonorName","RecipientName","Year")) %>%
+  mutate(Total_AfT = ifelse(is.na(Total_AfT), 0, Total_AfT), had_aft = as.integer(Total_AfT > 0))
+fixest::fepois(Total_AfT ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
+                 log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
+               cluster = ~dyad_id, data = CRS_full)
+
+# Alternative trade DVs. Re-run the trade equation with preference_margin (donor-specific depth; expect a zero mass — PPML or two-part is cleaner) and with eff_tariff_pk (peak-trimmed).
+# Channel measure. Swap the bounded share for the logit transform.
+# Donor + recipient fixed effects (you can't use full dyad FE — they'd absorb time-invariant BP inputs):
+```
+
+```{r}
+fixest::feols(trade_concession ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
+                log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
+              cluster = ~dyad_id, data = CRS_Data)   # repeat per equation
+
+# Threat-point sensitivity. Drop donor_threat_dyad_lag (replaceability is partly mechanical with flow size); try alternative recipient outside-option measures.
+```
