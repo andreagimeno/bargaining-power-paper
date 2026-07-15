@@ -42,36 +42,43 @@ what a git repo should hold. The workflow expects the following layout under
 ```
 data/raw/
 ├── CRS/
-│   └── CRS 2006.xlsx ... CRS 2023.xlsx      # OECD DAC Creditor Reporting System, one file per year
+│   └── crs_2006.xlsx ... crs_2023.xlsx                        # OECD DAC Creditor Reporting System, one file per year
+│       (crs_2002_2003.xlsx, crs_2004_2005.xlsx are older bundled extracts, unused by the current workflow)
 └── aft-bargaining-power/
-    ├── AgreementScoresAll_Jun2024.csv       # UN General Assembly voting agreement scores
-    ├── COW-country-codes.csv                # Correlates of War country code list
-    ├── dist_cepii 2.xls                     # CEPII GeoDist bilateral distance/colonial-ties data
-    ├── Cost of trade.csv                    # bilateral trade costs
-    ├── Goods exports to the world.csv       # merchandise exports to the world
-    ├── OECD-WTO_BATIS_BPM6_December2025_bulk.csv   # OECD-WTO Balanced Trade in Services (BATIS)
-    ├── Bilateral trade in goods (recipient exports).csv
-    ├── Bilateral trade in goods (recipient imports).csv
-    ├── Donors exports to world.csv
-    ├── Goods and services exports.csv
-    ├── wgidataset.xlsx                      # World Bank Worldwide Governance Indicators
-    ├── complexity_eci_a_hs96_hs4.csv        # Economic Complexity Index (Growth Lab / Atlas of Economic Complexity)
-    ├── Natural resources rents (%GDP).csv   # World Bank WDI
-    ├── Inflows of foreign population.csv    # OECD International Migration Database
-    ├── Inflows of asylum seekers.csv        # OECD/UNHCR
-    ├── Value Added.xlsx                     # value added in exports (multi-sheet)
-    ├── Total reserves in months of imports.csv   # World Bank WDI
-    ├── GDP growth.csv                       # World Bank WDI
-    ├── External debt stocks.csv             # World Bank WDI
-    ├── 11723.xlsx                           # concessions data, sheet "H0"
-    ├── tariffsPairs_88_21_vbeta1-2024-12.csv
-    ├── BACI_HS92_V202601/                   # CEPII BACI bilateral trade data (HS92), by year
+    ├── un_voting_agreement_scores_2024-06.csv                 # Bailey/Strezhnev/Voeten UN General Assembly voting agreement scores
+    ├── cow_country_codes.csv                                  # Correlates of War country code list
+    ├── cepii_geodist.xls                                      # CEPII GeoDist bilateral distance/colonial-ties data
+    ├── oecd_trade_costs.csv                                   # OECD Data Explorer: bilateral trade costs
+    ├── oecd_goods_exports_world.csv                           # OECD Data Explorer: merchandise exports to the world
+    ├── OECD-WTO_BATIS_BPM6_December2025_bulk.csv              # OECD-WTO Balanced Trade in Services (BATIS)
+    ├── oecd_bilateral_trade_goods_recipient_exports.csv
+    ├── oecd_bilateral_trade_goods_recipient_imports.csv
+    ├── oecd_donor_exports_world.csv                           # OECD Data Explorer
+    ├── worldbank_goods_services_exports.csv                   # World Bank WDI
+    ├── worldbank_wgi.xlsx                                     # World Bank Worldwide Governance Indicators
+    ├── atlas_eci_hs96_hs4.csv                                 # Economic Complexity Index (Harvard Growth Lab / Atlas of Economic Complexity)
+    ├── worldbank_natural_resource_rents_pct_gdp.csv           # World Bank WDI
+    ├── oecd_foreign_population_inflows.csv                    # OECD International Migration Database
+    ├── oecd_asylum_seeker_inflows.csv                         # OECD International Migration Database
+    ├── value_added_exports.xlsx                               # value added in exports (multi-sheet; source not otherwise confirmed)
+    ├── worldbank_total_reserves_months_imports.csv            # World Bank WDI
+    ├── worldbank_gdp_growth.csv                                # World Bank WDI
+    ├── worldbank_external_debt_stocks.csv                     # World Bank WDI
+    ├── gtap_sector_concordance_11723.xlsx                     # GTAP Resource Library: HS6 -> GTAP sector concordance, sheet "H0"
+    ├── gtap_tariffs_pairs_88_21_vbeta1-2024-12.csv            # GTAP-family bilateral tariffs
+    ├── BACI_HS92_V202601/                                     # CEPII BACI bilateral trade data (HS92), by year
     │   ├── BACI_HS92_Y2004_V202601.csv
     │   ├── BACI_HS92_Y2005_V202601.csv
     │   └── country_codes_V202601.csv
-    └── GTAP_vbeta1-2024-12/                 # GTAP tariff data
+    └── GTAP_vbeta1-2024-12/                                   # GTAP tariff data
         └── tariff_GTAP_88_21_vbeta1-2024-12.csv
 ```
+
+Filenames follow a `<source>_<content>_<vintage-if-any>` convention (lowercase,
+underscores, no spaces/special characters) — except for `BACI_HS92_V202601/` and
+`GTAP_vbeta1-2024-12/`, whose files keep the exact names CEPII/GTAP distribute
+them under, since those already encode an official release version that matters
+for verifying you're using the right vintage.
 
 > **Note:** `02_descriptive_stats.R` used to depend on a separately-downloaded
 > OECD file, `CRS by modality.xlsx`, for one chart (total ODA disbursements by

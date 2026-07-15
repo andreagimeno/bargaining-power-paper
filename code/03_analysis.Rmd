@@ -283,7 +283,7 @@ sur <- systemfit(list(
   trade   = preference_margin ~ alpha_z + dR_z + dD_z + Year_f),
   method = "SUR", data = est)
 print(summary(sur))
-print(round(cor(residuals(sur)), 3))    # <- this IS your P2(a); Table 2
+print(round(cor(residuals(sur)), 3))    # Table 2 / prediction P2(a): residual correlation matrix
 ```
 
 #### Dyad cluster-bootstrap of the WHOLE pipeline  (the central inference fix):
@@ -386,7 +386,7 @@ cat("Joint Wald W =", round(W,2), " p =", signif(pchisq(W, length(bp_terms), low
 ```{r}
 # P2 — two pieces, both already produced above.
 
-## Piece (a) is the residual-correlation matrix from chunk 5 (cor(residuals(sur))); the live cell is the positive flow–channel correlation, read as co-movement/complementarity, with a negative off-diagonal being the conditional trade-off.
+## Piece (a) is the residual-correlation matrix from the SUR estimation above (cor(residuals(sur))); the live cell is the positive flow–channel correlation, read as co-movement/complementarity, with a negative off-diagonal being the conditional trade-off.
 
 ## Piece (b) is the decomposition rows of res (*_urg/geo/comm/inst), where commercial sitting below zero against geopolitical/institutional above it is the heterogeneity result. There is no quadratic marginal-effects step any more.
 ```

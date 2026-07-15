@@ -13,24 +13,24 @@ source(here::here("code/00_packages.R"))
 
 # AfT Data ----
 
-CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
-CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
-CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
-CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
-CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
-CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
-CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
-CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
-CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
-CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
-CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
-CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
-CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
-CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
-CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
-CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
-CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
-CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+CRS_2006 <- read_excel(here::here("data/raw/CRS/crs_2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/crs_2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/crs_2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/crs_2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/crs_2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/crs_2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/crs_2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/crs_2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/crs_2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/crs_2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/crs_2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/crs_2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/crs_2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/crs_2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/crs_2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/crs_2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/crs_2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/crs_2023.xlsx"))
 
 #### AfT flows total:
 
@@ -137,7 +137,10 @@ Channel_data <- Channel_data %>%
   dplyr::select(Year, DonorName, RecipientName, `Donor channels`, `Recipient channels`, `Other channels`)
 
 # `ChannelBalance` as a bounded share for robustness:
-## Zero-handling (when donor channels = 0, the measure conflates "all recipient-delivered" with "large recipient flows"). A bounded share is cleaner and more interpretable; keep the log-ratio as primary and the share as a robustness check, or switch — your call.
+## Zero-handling: when donor channels = 0, the log-ratio measure conflates
+## "all recipient-delivered" with "large recipient flows". A bounded share is
+## cleaner and more interpretable, so it is retained as a robustness check
+## alongside the primary log-ratio measure.
 
 Channel_data <- Channel_data %>%
   mutate(
@@ -163,7 +166,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # UN voting data ----
 
-AgreementScores <- read_csv(here::here("data/raw/aft-bargaining-power/AgreementScoresAll_Jun2024.csv"))
+AgreementScores <- read_csv(here::here("data/raw/aft-bargaining-power/un_voting_agreement_scores_2024-06.csv"))
 
 AgreementScores <- filter(AgreementScores, year >= 2006)
 
@@ -185,7 +188,7 @@ AgreementScores <- AgreementScores %>%
 AgreementScores <- AgreementScores %>%
   rename(RecipientName = ccode2)
 
-COW_country_codes <- read_csv(here::here("data/raw/aft-bargaining-power/COW-country-codes.csv"))
+COW_country_codes <- read_csv(here::here("data/raw/aft-bargaining-power/cow_country_codes.csv"))
 
 COW_country_codes <- COW_country_codes %>%
   distinct(CCode, .keep_all = TRUE)
@@ -328,7 +331,7 @@ CRS_Data$COL_JP <- ifelse(CRS_Data$RecipientName == "Democratic People's Republi
 
 # Geographical proximity ----
 
-dist_cepii_2 <- read_excel(here::here("data/raw/aft-bargaining-power/dist_cepii 2.xls"))
+dist_cepii_2 <- read_excel(here::here("data/raw/aft-bargaining-power/cepii_geodist.xls"))
 
 dist_cepii_2 <- dist_cepii_2 %>%
   rename(RecipientName = iso_o)
@@ -538,7 +541,7 @@ CRS_Data <- CRS_Data %>%
 
 # Cost of trade ----
 
-Cost_of_trade <- read_csv(here::here("data/raw/aft-bargaining-power/Cost of trade.csv"))
+Cost_of_trade <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_trade_costs.csv"))
 
 Cost_of_trade <- Cost_of_trade %>%
   dplyr::select(`Reference area`, `Counterpart area`, TIME_PERIOD, OBS_VALUE)
@@ -567,7 +570,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 #### Recipients:
 
-World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods exports to the world.csv"))
+World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_goods_exports_world.csv"))
 
 World_exports <- World_exports %>%
   mutate(world_exp = OBS_VALUE)
@@ -613,7 +616,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 #### Donors:
 
-World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods exports to the world.csv"))
+World_exports <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_goods_exports_world.csv"))
 
 World_exports <- World_exports %>%
   mutate(world_exp = OBS_VALUE)
@@ -851,7 +854,7 @@ CRS_Data <- CRS_Data %>%
 
 # Bilateral trade in goods ----
 
-TradeGoods <- read_csv(here::here("data/raw/aft-bargaining-power/Bilateral trade in goods (recipient exports).csv"))
+TradeGoods <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_bilateral_trade_goods_recipient_exports.csv"))
 
 TradeGoods <- TradeGoods %>%
   mutate(good_exp = OBS_VALUE)
@@ -887,7 +890,7 @@ TradeGoods$TIME_PERIOD <- as.numeric(TradeGoods$TIME_PERIOD)
 CRS_Data <- CRS_Data %>%
             left_join(TradeGoods, by = c("RecipientName" = "Reference area", "DonorName" = "Counterpart area", "Year" = "TIME_PERIOD"))
 
-TradeGoods2 <- read_csv(here::here("data/raw/aft-bargaining-power/Bilateral trade in goods (recipient imports).csv"))
+TradeGoods2 <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_bilateral_trade_goods_recipient_imports.csv"))
 
 TradeGoods2 <- TradeGoods2 %>%
   mutate(good_imp = OBS_VALUE)
@@ -913,7 +916,7 @@ CRS_Data <- CRS_Data %>%
 
 CRS_Data$expshare_recipient <- CRS_Data$good_exp/CRS_Data$world_exp #Recipients' exports to donor as a share of total recipient exports
 
-TradeGoods3 <- read_csv(here::here("data/raw/aft-bargaining-power/Donors exports to world.csv"))
+TradeGoods3 <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_donor_exports_world.csv"))
 
 TradeGoods3 <- TradeGoods3 %>%
   mutate(goodsexp_donor = OBS_VALUE)
@@ -939,7 +942,7 @@ CRS_Data <- CRS_Data %>%
 
 #### Recipients:
 
-Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods and services exports.csv"))
+Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_goods_services_exports.csv"))
 
 Goods_and_services_exports <- Goods_and_services_exports %>%
   dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
@@ -948,6 +951,11 @@ Goods_and_services_exports <- Goods_and_services_exports %>%
   pivot_longer(cols = !(`Country Name`),
                names_to = "Year",
                values_to = "total_exports")
+
+# World Bank uses ".." as its missing-value marker, so this column reads in
+# as character; coerce to numeric (".." -> NA) before it is used in arithmetic.
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  mutate(total_exports = suppressWarnings(as.numeric(total_exports)))
 
 Goods_and_services_exports <- Goods_and_services_exports %>%
   mutate(`Country Name` = case_when(
@@ -980,7 +988,7 @@ CRS_Data <- CRS_Data %>%
 
 #### Donors:
 
-Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/Goods and services exports.csv"))
+Goods_and_services_exports <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_goods_services_exports.csv"))
 
 Goods_and_services_exports <- Goods_and_services_exports %>%
   dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
@@ -989,6 +997,10 @@ Goods_and_services_exports <- Goods_and_services_exports %>%
   pivot_longer(cols = !(`Country Name`),
                names_to = "Year",
                values_to = "total_exports_donor")
+
+# Same ".." missing-value coercion as the recipient-side pull above.
+Goods_and_services_exports <- Goods_and_services_exports %>%
+  mutate(total_exports_donor = suppressWarnings(as.numeric(total_exports_donor)))
 
 CRS_Data$Year <- as.numeric(CRS_Data$Year)
 Goods_and_services_exports$Year <- as.numeric(Goods_and_services_exports$Year)
@@ -2056,7 +2068,7 @@ CRS_Data$BITs[is.na(CRS_Data$BITs)] <- 0
 
 # World Governance Indicators ----
 
-wgi <- read_xlsx(here::here("data/raw/aft-bargaining-power/wgidataset.xlsx"))
+wgi <- read_xlsx(here::here("data/raw/aft-bargaining-power/worldbank_wgi.xlsx"))
 
 wgi <- wgi %>%
   filter(year %in% c(2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) %>%
@@ -2106,7 +2118,7 @@ CRS_Data <- CRS_Data %>%
 
 # Economic complexity ----
 
-eci <- read_csv(here::here("data/raw/aft-bargaining-power/complexity_eci_a_hs96_hs4.csv"))
+eci <- read_csv(here::here("data/raw/aft-bargaining-power/atlas_eci_hs96_hs4.csv"))
 
 eci <- eci %>%
   filter(year %in% c(2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023)) %>%
@@ -2142,7 +2154,7 @@ CRS_Data <- CRS_Data %>%
 
 # Natural resources rents (%GDP) ----
 
-natrents <- read_csv(here::here("data/raw/aft-bargaining-power/Natural resources rents (%GDP).csv"))
+natrents <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_natural_resource_rents_pct_gdp.csv"))
 
 natrents <- natrents %>%
   dplyr::select(-`Series Code`, -`Country Code`, -`Series Name`)
@@ -2208,24 +2220,24 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # Other AfT (by other donors) and other ODA (by partners and other donors) ----
 
-CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
-CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
-CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
-CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
-CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
-CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
-CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
-CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
-CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
-CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
-CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
-CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
-CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
-CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
-CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
-CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
-CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
-CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+CRS_2006 <- read_excel(here::here("data/raw/CRS/crs_2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/crs_2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/crs_2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/crs_2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/crs_2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/crs_2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/crs_2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/crs_2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/crs_2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/crs_2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/crs_2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/crs_2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/crs_2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/crs_2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/crs_2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/crs_2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/crs_2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/crs_2023.xlsx"))
 
 CRS_2006 <- CRS_2006 %>%
   dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, SectorName)
@@ -2335,9 +2347,9 @@ CRS_Data$Other_ODA <- CRS_Data$Total_ODA - CRS_Data$Donor_ODA
 
 # Migration and refugee flows ----
 
-foreign_pop <- read_csv(here::here("data/raw/aft-bargaining-power/Inflows of foreign population.csv"))
+foreign_pop <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_foreign_population_inflows.csv"))
 
-asylum <- read_csv(here::here("data/raw/aft-bargaining-power/Inflows of asylum seekers.csv"))
+asylum <- read_csv(here::here("data/raw/aft-bargaining-power/oecd_asylum_seeker_inflows.csv"))
 
 foreign_pop <- foreign_pop %>%
   dplyr::select(`Reference area`, Citizenship, OBS_VALUE, TIME_PERIOD)
@@ -2393,7 +2405,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # Value added to partner exports ----
 
-value_added <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"))
+value_added <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"))
 
 value_added <- value_added %>%
   rename(OriginVA = 1) %>%
@@ -2404,7 +2416,7 @@ value_added <- value_added %>%
   ) %>%
   mutate(Year = 2022)
 
-value_added2 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 2)
+value_added2 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 2)
 
 value_added2 <- value_added2 %>%
   rename(OriginVA = 1) %>%
@@ -2415,7 +2427,7 @@ value_added2 <- value_added2 %>%
   ) %>%
   mutate(Year = 2021)
 
-value_added3 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 3)
+value_added3 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 3)
 
 value_added3 <- value_added3 %>%
   rename(OriginVA = 1) %>%
@@ -2426,7 +2438,7 @@ value_added3 <- value_added3 %>%
   ) %>%
   mutate(Year = 2020)
 
-value_added4 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 4)
+value_added4 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 4)
 
 value_added4 <- value_added4 %>%
   rename(OriginVA = 1) %>%
@@ -2437,7 +2449,7 @@ value_added4 <- value_added4 %>%
   ) %>%
   mutate(Year = 2019)
 
-value_added5 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 5)
+value_added5 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 5)
 
 value_added5 <- value_added5 %>%
   rename(OriginVA = 1) %>%
@@ -2448,7 +2460,7 @@ value_added5 <- value_added5 %>%
   ) %>%
   mutate(Year = 2018)
 
-value_added6 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 6)
+value_added6 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 6)
 
 value_added6 <- value_added6 %>%
   rename(OriginVA = 1) %>%
@@ -2459,7 +2471,7 @@ value_added6 <- value_added6 %>%
   ) %>%
   mutate(Year = 2017)
 
-value_added7 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 7)
+value_added7 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 7)
 
 value_added7 <- value_added7 %>%
   rename(OriginVA = 1) %>%
@@ -2470,7 +2482,7 @@ value_added7 <- value_added7 %>%
   ) %>%
   mutate(Year = 2016)
 
-value_added8 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 8)
+value_added8 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 8)
 
 value_added8 <- value_added8 %>%
   rename(OriginVA = 1) %>%
@@ -2481,7 +2493,7 @@ value_added8 <- value_added8 %>%
   ) %>%
   mutate(Year = 2015)
 
-value_added9 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 9)
+value_added9 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 9)
 
 value_added9 <- value_added9 %>%
   rename(OriginVA = 1) %>%
@@ -2492,7 +2504,7 @@ value_added9 <- value_added9 %>%
   ) %>%
   mutate(Year = 2014)
 
-value_added10 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 10)
+value_added10 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 10)
 
 value_added10 <- value_added10 %>%
   rename(OriginVA = 1) %>%
@@ -2503,7 +2515,7 @@ value_added10 <- value_added10 %>%
   ) %>%
   mutate(Year = 2013)
 
-value_added11 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 11)
+value_added11 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 11)
 
 value_added11 <- value_added11 %>%
   rename(OriginVA = 1) %>%
@@ -2514,7 +2526,7 @@ value_added11 <- value_added11 %>%
   ) %>%
   mutate(Year = 2012)
 
-value_added12 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 12)
+value_added12 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 12)
 
 value_added12 <- value_added12 %>%
   rename(OriginVA = 1) %>%
@@ -2525,7 +2537,7 @@ value_added12 <- value_added12 %>%
   ) %>%
   mutate(Year = 2011)
 
-value_added13 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 13)
+value_added13 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 13)
 
 value_added13 <- value_added13 %>%
   rename(OriginVA = 1) %>%
@@ -2536,7 +2548,7 @@ value_added13 <- value_added13 %>%
   ) %>%
   mutate(Year = 2010)
 
-value_added14 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 14)
+value_added14 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 14)
 
 value_added14 <- value_added14 %>%
   rename(OriginVA = 1) %>%
@@ -2547,7 +2559,7 @@ value_added14 <- value_added14 %>%
   ) %>%
   mutate(Year = 2009)
 
-value_added15 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 15)
+value_added15 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 15)
 
 value_added15 <- value_added15 %>%
   rename(OriginVA = 1) %>%
@@ -2558,7 +2570,7 @@ value_added15 <- value_added15 %>%
   ) %>%
   mutate(Year = 2008)
 
-value_added16 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 16)
+value_added16 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 16)
 
 value_added16 <- value_added16 %>%
   rename(OriginVA = 1) %>%
@@ -2569,7 +2581,7 @@ value_added16 <- value_added16 %>%
   ) %>%
   mutate(Year = 2007)
 
-value_added17 <- read_excel(here::here("data/raw/aft-bargaining-power/Value Added.xlsx"), sheet = 17)
+value_added17 <- read_excel(here::here("data/raw/aft-bargaining-power/value_added_exports.xlsx"), sheet = 17)
 
 value_added17 <- value_added17 %>%
   rename(OriginVA = 1) %>%
@@ -2627,24 +2639,24 @@ CRS_Data <- CRS_Data %>%
 
 # Threat point donors ----
 
-CRS_2006 <- read_excel(here::here("data/raw/CRS/CRS 2006.xlsx"))
-CRS_2007 <- read_excel(here::here("data/raw/CRS/CRS 2007.xlsx"))
-CRS_2008 <- read_excel(here::here("data/raw/CRS/CRS 2008.xlsx"))
-CRS_2009 <- read_excel(here::here("data/raw/CRS/CRS 2009.xlsx"))
-CRS_2010 <- read_excel(here::here("data/raw/CRS/CRS 2010.xlsx"))
-CRS_2011 <- read_excel(here::here("data/raw/CRS/CRS 2011.xlsx"))
-CRS_2012 <- read_excel(here::here("data/raw/CRS/CRS 2012.xlsx"))
-CRS_2013 <- read_excel(here::here("data/raw/CRS/CRS 2013.xlsx"))
-CRS_2014 <- read_excel(here::here("data/raw/CRS/CRS 2014.xlsx"))
-CRS_2015 <- read_excel(here::here("data/raw/CRS/CRS 2015.xlsx"))
-CRS_2016 <- read_excel(here::here("data/raw/CRS/CRS 2016.xlsx"))
-CRS_2017 <- read_excel(here::here("data/raw/CRS/CRS 2017.xlsx"))
-CRS_2018 <- read_excel(here::here("data/raw/CRS/CRS 2018.xlsx"))
-CRS_2019 <- read_excel(here::here("data/raw/CRS/CRS 2019.xlsx"))
-CRS_2020 <- read_excel(here::here("data/raw/CRS/CRS 2020.xlsx"))
-CRS_2021 <- read_excel(here::here("data/raw/CRS/CRS 2021.xlsx"))
-CRS_2022 <- read_excel(here::here("data/raw/CRS/CRS 2022.xlsx"))
-CRS_2023 <- read_excel(here::here("data/raw/CRS/CRS 2023.xlsx"))
+CRS_2006 <- read_excel(here::here("data/raw/CRS/crs_2006.xlsx"))
+CRS_2007 <- read_excel(here::here("data/raw/CRS/crs_2007.xlsx"))
+CRS_2008 <- read_excel(here::here("data/raw/CRS/crs_2008.xlsx"))
+CRS_2009 <- read_excel(here::here("data/raw/CRS/crs_2009.xlsx"))
+CRS_2010 <- read_excel(here::here("data/raw/CRS/crs_2010.xlsx"))
+CRS_2011 <- read_excel(here::here("data/raw/CRS/crs_2011.xlsx"))
+CRS_2012 <- read_excel(here::here("data/raw/CRS/crs_2012.xlsx"))
+CRS_2013 <- read_excel(here::here("data/raw/CRS/crs_2013.xlsx"))
+CRS_2014 <- read_excel(here::here("data/raw/CRS/crs_2014.xlsx"))
+CRS_2015 <- read_excel(here::here("data/raw/CRS/crs_2015.xlsx"))
+CRS_2016 <- read_excel(here::here("data/raw/CRS/crs_2016.xlsx"))
+CRS_2017 <- read_excel(here::here("data/raw/CRS/crs_2017.xlsx"))
+CRS_2018 <- read_excel(here::here("data/raw/CRS/crs_2018.xlsx"))
+CRS_2019 <- read_excel(here::here("data/raw/CRS/crs_2019.xlsx"))
+CRS_2020 <- read_excel(here::here("data/raw/CRS/crs_2020.xlsx"))
+CRS_2021 <- read_excel(here::here("data/raw/CRS/crs_2021.xlsx"))
+CRS_2022 <- read_excel(here::here("data/raw/CRS/crs_2022.xlsx"))
+CRS_2023 <- read_excel(here::here("data/raw/CRS/crs_2023.xlsx"))
 
 CRS_2006 <- CRS_2006 %>%
   dplyr::select(DonorName, RecipientName, Year, USD_Disbursement, USD_Commitment, SectorName)
@@ -2755,10 +2767,10 @@ donors     <- c("FRA", "DEU", "JPN", "GBR", "USA")
 diag4_year <- 2015
 
 ## GTAP 10 / GSEC3 standard ordering, merchandise sectors 1-47 (code -> number).
-## Used only if your concordance gives 3-letter codes instead of numbers.
+## Used only if the concordance file gives 3-letter codes instead of numbers.
 ## Positions 1-28 and 34-47 are confirmed from the GTAP 10 sector table;
 ## 29-33 (lea,lum,ppp,p_c,chm) follow the standard ordering — verify against
-## your concordance file's own labels if it is code-based.
+## the concordance file's own labels if it is code-based.
 gtap_lookup <- tibble(
   code = c("pdr","wht","gro","v_f","osd","c_b","pfb","ocr","ctl","oap","rmk",
            "wol","frs","fsh","coa","oil","gas","omn","cmt","omt","vol","mil",
@@ -2796,7 +2808,7 @@ cat("[3] BACI loaded:", nrow(baci), "rows;",
 
 # Concordance ingest + validation:
 ## Read everything as character first so codes keep leading zeros.
-conc_file <- here::here("data/raw/aft-bargaining-power/11723.xlsx")
+conc_file <- here::here("data/raw/aft-bargaining-power/gtap_sector_concordance_11723.xlsx")
 
 ## H0 sheet has a TWO-ROW header (row 1 = "GTAP 10"/"GTAP 11" banner,
 ## row 2 = real column names). skip = 1 drops the banner so the true
@@ -2858,8 +2870,16 @@ if (any(!anchor_check$ok %in% TRUE))
 # Attach sectors to BACI + unmapped check:
 exp_prod <- exp_prod %>%
   left_join(conc, by = c("k" = "hs6")) %>%
-  mutate(chap = as.integer(substr(k, 1, 2)), section = hs2_to_section(chap))
- 
+  mutate(chap = as.integer(substr(k, 1, 2)))
+
+# hs2_to_section() (HS chapter -> HS section, e.g. ch. 1-5 -> Section I) is
+# used only by the "GTAP vs section" diagnostic below and is not defined
+# anywhere in this codebase. That diagnostic is skipped unless the function
+# is supplied elsewhere; nothing else in the pipeline depends on `section`.
+if (exists("hs2_to_section")) {
+  exp_prod <- exp_prod %>% mutate(section = hs2_to_section(chap))
+}
+
 unmapped <- exp_prod %>%
   filter(exp_iso3 %in% donors) %>%
   group_by(exp_iso3) %>%
@@ -2878,17 +2898,17 @@ make_shares <- function(df, sector_col) {
     dplyr::select(exp_iso3, sector, share)
 }
 shares_gtap <- make_shares(exp_prod, "gtap")
-shares_sec  <- make_shares(exp_prod, "section")
- 
+if ("section" %in% names(exp_prod)) shares_sec <- make_shares(exp_prod, "section")
+
 to_matrix <- function(sh) {
   w <- sh %>% pivot_wider(names_from = exp_iso3, values_from = share,
                           values_fill = 0)
   M <- as.matrix(w[, setdiff(names(w), "sector")]); rownames(M) <- w$sector; M
 }
 M_gtap <- to_matrix(shares_gtap)
-M_sec  <- to_matrix(shares_sec)
-cat("[6] share vectors built: GTAP", nrow(M_gtap), "sectors; Section",
-    nrow(M_sec), "sectors\n")
+if (exists("shares_sec")) M_sec <- to_matrix(shares_sec)
+cat("[6] share vectors built: GTAP", nrow(M_gtap), "sectors",
+    if (exists("M_sec")) paste0("; Section ", nrow(M_sec), " sectors") else "(Section skipped)", "\n")
 
 # Diagnostic 1: Concentration
 diag1 <- shares_gtap %>%
@@ -2897,6 +2917,14 @@ diag1 <- shares_gtap %>%
   summarise(hhi = sum(share^2), eff_n_sectors = 1 / sum(share^2),
             top5_share = sum(sort(share, decreasing = TRUE)[1:5]), .groups = "drop")
 cat("\n=== DIAGNOSTIC 1: donor basket concentration (GTAP) ===\n"); print(diag1)
+
+# cosine_dist()/l1_dist() are used by diagnostics 2-4a below (pairwise donor-
+# basket comparisons) but were not defined anywhere in this codebase.
+# Standard definitions, reconstructed here: cosine distance = 1 - cosine
+# similarity (0 = identical direction, up to 2 = opposite); L1 distance =
+# sum of absolute differences between the two share vectors.
+cosine_dist <- function(x, y) 1 - sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
+l1_dist     <- function(x, y) sum(abs(x - y))
 
 # Diagnostic 2: Donor vs donor
 ## THE decisive check. High distance => tau_drt genuinely moves across donors.
@@ -2913,15 +2941,20 @@ diag3 <- tibble(donor = donors,
 cat("\n=== DIAGNOSTIC 3: donor vs world distance (GTAP) ===\n"); print(diag3)
 
 # Diagnostic 4a: GTAP vs section
-summarise_level <- function(M) {
-  prc <- combn(donors, 2)
-  c(mean_pairwise_donor_L1 = mean(map2_dbl(prc[1, ], prc[2, ],
-                                           ~ l1_dist(M[, .x], M[, .y]))),
-    mean_donor_vs_world_L1 = mean(map_dbl(donors, ~ l1_dist(M[, .x], M[, "WORLD"]))))
+if (exists("M_sec")) {
+  summarise_level <- function(M) {
+    prc <- combn(donors, 2)
+    c(mean_pairwise_donor_L1 = mean(map2_dbl(prc[1, ], prc[2, ],
+                                             ~ l1_dist(M[, .x], M[, .y]))),
+      mean_donor_vs_world_L1 = mean(map_dbl(donors, ~ l1_dist(M[, .x], M[, "WORLD"]))))
+  }
+  diag4a <- rbind(GTAP = summarise_level(M_gtap), Section = summarise_level(M_sec))
+  cat("\n=== DIAGNOSTIC 4a: differentiation, GTAP vs Section (weights) ===\n")
+  print(round(diag4a, 4))
+} else {
+  cat("\n=== DIAGNOSTIC 4a skipped: hs2_to_section() is not defined, so the",
+      "HS-section comparison basis is unavailable ===\n")
 }
-diag4a <- rbind(GTAP = summarise_level(M_gtap), Section = summarise_level(M_sec))
-cat("\n=== DIAGNOSTIC 4a: differentiation, GTAP vs Section (weights) ===\n")
-print(round(diag4a, 4))
 
 # Diagnostic 4b: Spread of the assembled tau
 teti <- read_csv(teti_gtap, show_col_types = FALSE) %>%
@@ -2998,7 +3031,7 @@ summarise_spread <- function(tau_df) {
               sd_eff  = sd(tau_eff),
               sd_pref = sd(pref_margin), .groups = "drop") %>%
     group_by(year) %>%
-    summarise(med_sd_mfn  = median(sd_mfn,  na.rm = TRUE),   # == your diag4b in 2015
+    summarise(med_sd_mfn  = median(sd_mfn,  na.rm = TRUE),   # cross-check: matches the 2015 diagnostic value above
               med_sd_eff  = median(sd_eff,  na.rm = TRUE),   # effective (incl. pref)
               med_sd_pref = median(sd_pref, na.rm = TRUE),   # preference-only spread
               .groups = "drop")
@@ -3019,10 +3052,39 @@ tau_all %>%
   summarise(med_pref_margin = median(pref_margin, na.rm = TRUE), .groups = "drop") %>%
   pivot_wider(names_from = donor, values_from = med_pref_margin) %>%
   print()
-# The med_sd_mfn column reproduces your 0.446 for 2015 — so the refactor is consistent and the rest of the table is trustworthy.
-# The headline: the effective-tariff channel carries real and growing dyadic signal. med_sd_eff runs 0.54 → 0.66 ppt and rises monotonically, while med_sd_mfn is flat at ~0.44 and even drifts down slightly. So preferences are adding cross-donor spread on top of composition, and adding more of it every year. By 2021 the effective measure has ~50% more dyadic dispersion than the pure-composition one. That's the direction you wanted.
-# But notice where the signal actually sits — this is the important subtlety. med_sd_eff (~0.6) is far larger than med_sd_pref (~0.17), even though eff = mfn − pref by construction. That's not a contradiction: the effective measure's spread is still mostly inherited from the MFN composition channel, with the preferential margin adding a modest, increasing increment. So "switch to tariff95" doesn't escape the compression problem — it improves on it at the margin. The clean, theory-relevant object is pref_margin itself, and its spread (med_sd_pref) is genuinely small in absolute terms (0.04 → 0.17 ppt). The honest framing is: the preferential channel is real and rising, not large.
-# The donor-margin table is where your paper's story comes alive, and it behaves exactly as the theory predicts. France, Germany, and the UK show substantial and growing median preferential margins (France hits 0.82 ppt by 2021), while Japan sits near zero throughout (~0.01–0.09) and the US stays low (~0.04–0.08). That is precisely the EU-centric pattern you'd expect for an ODA-recipient set: EBA, the EPAs, and EU GSP reach deep into these recipients, while Japanese and US preferential schemes barely touch them. This is strong corroboration that pref_margin is capturing genuine, donor-specific, negotiated market access rather than noise — and it directly supports a bargaining narrative centered on EU donors.
+# The med_sd_mfn column reproduces the 0.446 figure for 2015 obtained in the
+# diagnostic step above, confirming the refactored code is consistent.
+#
+# The effective-tariff channel carries real and growing dyadic signal:
+# med_sd_eff runs 0.54 -> 0.66 ppt and rises monotonically, while med_sd_mfn
+# is flat at ~0.44 and even drifts down slightly. Preferences are adding
+# cross-donor spread on top of composition, and adding more of it every
+# year; by 2021 the effective measure has ~50% more dyadic dispersion than
+# the pure-composition one, consistent with preferential tariff treatment
+# becoming an increasingly important source of donor-specific variation.
+#
+# Note where the signal actually sits, which is the important subtlety:
+# med_sd_eff (~0.6) is far larger than med_sd_pref (~0.17), even though
+# eff = mfn - pref by construction. This is not a contradiction: the
+# effective measure's spread is still mostly inherited from the MFN
+# composition channel, with the preferential margin adding a modest,
+# increasing increment. So switching to tariff95 does not escape the
+# compression problem, it improves on it at the margin. The clean,
+# theory-relevant object is pref_margin itself, and its spread
+# (med_sd_pref) is genuinely small in absolute terms (0.04 -> 0.17 ppt).
+# The appropriate interpretation: the preferential channel is real and
+# rising, not large.
+#
+# The donor-margin table behaves exactly as the theoretical framework
+# predicts. France, Germany, and the UK show substantial and growing
+# median preferential margins (France hits 0.82 ppt by 2021), while Japan
+# sits near zero throughout (~0.01-0.09) and the US stays low (~0.04-0.08).
+# This is precisely the EU-centric pattern expected for an ODA-recipient
+# set: EBA, the EPAs, and EU GSP reach deep into these recipients, while
+# Japanese and US preferential schemes barely touch them -- strong
+# corroboration that pref_margin captures genuine, donor-specific,
+# negotiated market access rather than noise, supporting a bargaining
+# narrative centered on EU donors.
 
 # ================= coverage diagnosis + balanced-dyad trend ===============
 
@@ -3114,7 +3176,7 @@ write_csv(concession_panel, here::here("data/processed/concession_panel_2006_202
 
 # Policy concessions ----
 
-tariffs <- read_csv(here::here("data/raw/aft-bargaining-power/tariffsPairs_88_21_vbeta1-2024-12.csv"))
+tariffs <- read_csv(here::here("data/raw/aft-bargaining-power/gtap_tariffs_pairs_88_21_vbeta1-2024-12.csv"))
 
 donor_iso3 <- tibble::tribble(
   ~iso2,  ~DonorName,
@@ -3183,7 +3245,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # Total reserves in months of imports (recipient) ----
 
-total_reserves <- read_csv(here::here("data/raw/aft-bargaining-power/Total reserves in months of imports.csv"))
+total_reserves <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_total_reserves_months_imports.csv"))
 
 total_reserves <- total_reserves %>%
   dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
@@ -3235,7 +3297,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # GDP growth (recipient) ----
 
-GDP_growth <- read_csv(here::here("data/raw/aft-bargaining-power/GDP growth.csv"))
+GDP_growth <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_gdp_growth.csv"))
 
 GDP_growth <- GDP_growth %>%
   dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))
@@ -3287,7 +3349,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data.xlsx"))
 
 # External debt stocks (recipient) ----
 
-external_debt <- read_csv(here::here("data/raw/aft-bargaining-power/External debt stocks.csv"))
+external_debt <- read_csv(here::here("data/raw/aft-bargaining-power/worldbank_external_debt_stocks.csv"))
 
 external_debt <- external_debt %>%
   dplyr::select(-c(`Country Code`, `Series Name`, `Series Code`))

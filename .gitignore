@@ -21,3 +21,6 @@ Rplots.pdf
 
 # macOS
 .DS_Store
+
+# Local tooling
+.claude/
