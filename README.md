@@ -1,11 +1,24 @@
 # Aid for Trade and Donor–Recipient Bargaining Power
 
-Data-construction and analysis workflow for a paper studying how donor–recipient
-bargaining power (UN voting alignment, colonial history, trade dependence, tariff
-concessions, migration ties, threat points, etc.) shapes the allocation of
-Aid for Trade (AfT). The workflow merges OECD DAC Creditor Reporting System (CRS)
-aid data with a range of trade, political, and economic datasets into a
-recipient-donor-year panel, then runs the paper's regressions and figures.
+Data-construction and analysis workflow for paper by Andrea Gimeno Solaz with working title
+"Beyond the aid-for-policy bargain: recipient bargaining power in the age of project-based aid".
+Abstract: Project-based lending has overtaken general budget support as the dominant aid modality,
+with Aid for Trade disbursements alone more than quadrupling since 2006 to nearly a quarter of total development aid.
+Nevertheless, bargaining in bilateral aid negotiations is still understood as a single exchange of money for policy.
+This paper develops an alternative extended framework which shows bargaining operates across three key stakes at once:
+flow size, policy concessions and project design and implementation command. Using a dyadic panel of the five largest
+bilateral Aid for Trade donors and every aid-eligible recipient country between 2006 and 2023, the paper constructs a
+Nash-bargaining measure of relative bargaining power and estimates its effect on all three negotiation outcomes jointly.
+Bargaining power shapes the three outcomes simultaneously, but its effect is the cleanest on project design and implementation
+control, the dimension conventional models omit entirely. A one-standard deviation increase in recipient bargaining power
+relative to the donor is found to shift Aid for Trade project delivery roughly 22% towards recipient-controlled channels.
+Recipients also secure larger Aid for Trade flows as their bargaining position strengthens, and these two gains bundle
+together rather than trade off. For recipient governments, design and implementation control, not aid volume, is the
+most reliable channel for converting bargaining strength into control over the aid relations they enter. Retaining
+trade policy space, by contrast, is shown to require a more specific asset, namely commercial leverage over the donor,
+rather than overall bargaining strength alone.
+
+
 
 ## Repository structure
 
@@ -25,19 +38,7 @@ recipient-donor-year panel, then runs the paper's regressions and figures.
 └── bargaining-power-paper.Rproj
 ```
 
-The workflow used to be a single 4,800-line notebook. It's now split into a
-build stage and an analysis stage — see "Running the workflow" below — which
-is the convention expected by most journal replication-package standards
-(e.g. the AEA Data and Code Availability Standard): data construction is
-reproducible independently of the modeling, and each script states its
-inputs/outputs at the top.
-
 ## Data
-
-`data/raw/` and `data/processed/` are **not tracked in git** — several of the raw
-files are tens or hundreds of megabytes (a few are multiple gigabytes), well past
-what a git repo should hold. The workflow expects the following layout under
-`data/raw/`:
 
 ```
 data/raw/
@@ -80,13 +81,6 @@ underscores, no spaces/special characters) — except for `BACI_HS92_V202601/` a
 them under, since those already encode an official release version that matters
 for verifying you're using the right vintage.
 
-> **Note:** `02_descriptive_stats.R` used to depend on a separately-downloaded
-> OECD file, `CRS by modality.xlsx`, for one chart (total ODA disbursements by
-> aid modality and year). That file was lost and isn't reproducible from a
-> clean OECD re-download with certainty, so the chart is now built directly
-> from `data/raw/CRS/` via the `Aid_T` -> modality-category crosswalk instead
-> — no external dependency for that chart anymore.
-
 `data/processed/` and `output/figures/` start empty and are populated by running
 the code (e.g. `CRS_Data.xlsx`, `concession_panel_2006_2021.csv`, `modality_plot.png`).
 See `data/codebook.md` for what the constructed variables in the final panel mean.
@@ -113,6 +107,3 @@ All three scripts depend on `here`, `dplyr`, `ggplot2`, `tidyr`, `writexl`, `rea
 `multiwayvcov`, `sandwich`, `MASS`, `fixest`, `msm`, `marginaleffects`,
 `patchwork`, `interactions`, `RColorBrewer`, `effects`, and `countrycode`
 — see `code/00_packages.R` for the full list.
-
-A natural next step for reproducibility is to pin these with
-[`renv`](https://rstudio.github.io/renv/) (`renv::init()`), which isn't set up yet.
