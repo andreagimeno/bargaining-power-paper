@@ -1,11 +1,13 @@
 # Aid for Trade and Donor–Recipient Bargaining Power
 
-Data-construction and analysis workflow for a paper studying how donor–recipient
-bargaining power (UN voting alignment, colonial history, trade dependence, tariff
-concessions, migration ties, threat points, etc.) shapes the allocation of
-Aid for Trade (AfT). The workflow merges OECD DAC Creditor Reporting System (CRS)
-aid data with a range of trade, political, and economic datasets into a
-recipient-donor-year panel, then runs the paper's regressions and figures.
+This is the replication package for my paper studying how donor–recipient
+bargaining power (UN voting alignment, colonial history, trade dependence,
+tariff concessions, migration ties, threat points, etc.) shapes the
+allocation of Aid for Trade (AfT). The workflow merges OECD DAC Creditor
+Reporting System (CRS) aid data with a range of trade, political, and
+economic datasets into a recipient-donor-year panel, then runs the paper's
+regressions and figures. This document explains how the repository is
+organized and how to reproduce the results from raw data.
 
 ## Repository structure
 
@@ -25,19 +27,18 @@ recipient-donor-year panel, then runs the paper's regressions and figures.
 └── bargaining-power-paper.Rproj
 ```
 
-The workflow used to be a single 4,800-line notebook. It's now split into a
-build stage and an analysis stage — see "Running the workflow" below — which
-is the convention expected by most journal replication-package standards
-(e.g. the AEA Data and Code Availability Standard): data construction is
-reproducible independently of the modeling, and each script states its
-inputs/outputs at the top.
+The build stage and the analysis stage are separate scripts (see "Running
+the workflow" below), following the convention expected by most journal
+replication-package standards (e.g. the AEA Data and Code Availability
+Standard): data construction is reproducible independently of the modeling,
+and each script states its inputs/outputs at the top.
 
 ## Data
 
-`data/raw/` and `data/processed/` are **not tracked in git** — several of the raw
-files are tens or hundreds of megabytes (a few are multiple gigabytes), well past
-what a git repo should hold. The workflow expects the following layout under
-`data/raw/`:
+I do not track `data/raw/` or `data/processed/` in git — several of the raw
+files are tens or hundreds of megabytes (a few are multiple gigabytes), well
+past what a git repo should hold. To reproduce the build, populate
+`data/raw/` with the following layout:
 
 ```
 data/raw/
@@ -60,49 +61,62 @@ data/raw/
     ├── worldbank_natural_resource_rents_pct_gdp.csv           # World Bank WDI
     ├── oecd_foreign_population_inflows.csv                    # OECD International Migration Database
     ├── oecd_asylum_seeker_inflows.csv                         # OECD International Migration Database
-    ├── value_added_exports.xlsx                               # value added in exports (multi-sheet; source not otherwise confirmed)
+    ├── value_added_exports.xlsx                               # World Bank WITS, Export Value Added (EVAD) country stats: https://wits.worldbank.org/analyticaldata/evad-countrystats.aspx (multi-sheet, one sheet per year)
     ├── worldbank_total_reserves_months_imports.csv            # World Bank WDI
     ├── worldbank_gdp_growth.csv                                # World Bank WDI
     ├── worldbank_external_debt_stocks.csv                     # World Bank WDI
-    ├── gtap_sector_concordance_11723.xlsx                     # GTAP Resource Library: HS6 -> GTAP sector concordance, sheet "H0"
-    ├── gtap_tariffs_pairs_88_21_vbeta1-2024-12.csv            # GTAP-family bilateral tariffs
-    ├── BACI_HS92_V202601/                                     # CEPII BACI bilateral trade data (HS92), by year
-    │   ├── BACI_HS92_Y2004_V202601.csv
-    │   ├── BACI_HS92_Y2005_V202601.csv
-    │   └── country_codes_V202601.csv
-    └── GTAP_vbeta1-2024-12/                                   # GTAP tariff data
-        └── tariff_GTAP_88_21_vbeta1-2024-12.csv
+    └── gtap_tariffs_pairs_88_21_vbeta1-2024-12.csv            # Teti (2024) Global Tariff Database: bilateral (importer-exporter-year) applied/MFN tariffs
 ```
 
-Filenames follow a `<source>_<content>_<vintage-if-any>` convention (lowercase,
-underscores, no spaces/special characters) — except for `BACI_HS92_V202601/` and
-`GTAP_vbeta1-2024-12/`, whose files keep the exact names CEPII/GTAP distribute
-them under, since those already encode an official release version that matters
-for verifying you're using the right vintage.
+I follow a `<source>_<content>_<vintage-if-any>` filename convention
+(lowercase, underscores, no spaces/special characters) throughout.
 
-> **Note:** `02_descriptive_stats.R` used to depend on a separately-downloaded
-> OECD file, `CRS by modality.xlsx`, for one chart (total ODA disbursements by
-> aid modality and year). That file was lost and isn't reproducible from a
-> clean OECD re-download with certainty, so the chart is now built directly
-> from `data/raw/CRS/` via the `Aid_T` -> modality-category crosswalk instead
-> — no external dependency for that chart anymore.
+> **Note on the modality chart:** the `02_descriptive_stats.R` chart of total
+> ODA disbursements by aid modality and year is built directly from
+> `data/raw/CRS/` via the `Aid_T` -> modality-category crosswalk, with no
+> external dependency beyond the CRS files already listed above.
 
-`data/processed/` and `output/figures/` start empty and are populated by running
-the code (e.g. `CRS_Data.xlsx`, `concession_panel_2006_2021.csv`, `modality_plot.png`).
-See `data/codebook.md` for what the constructed variables in the final panel mean.
+> **Note on the trade-concession measure:** the policy-concession variable
+> (`preference_margin` / `trade_concession`) is built from genuinely dyadic
+> (importer-exporter-year) tariff pairs in Teti's (2024) Global Tariff
+> Database — `preference_margin` is the recipient's MFN rate minus the rate
+> it actually applies to the donor, and `trade_concession` is the negative
+> of the effectively-applied rate itself (a robustness variant; see
+> `data/codebook.md`). Both are derived from the single file
+> `gtap_tariffs_pairs_88_21_vbeta1-2024-12.csv` listed above.
+
+> **Note on the commercial dependency measure:** `s_comm` (see
+> `data/codebook.md`) combines two sub-components. `total_asym` (net trade
+> dependence) is built from bilateral goods trade (OECD BIMTS,
+> `oecd_bilateral_trade_goods_recipient_exports.csv` /
+> `_imports.csv`) and bilateral services trade (OECD-WTO BaTiS,
+> `OECD-WTO_BATIS_BPM6_December2025_bulk.csv`), each scaled by the
+> recipient's and donor's total goods-and-services exports (World Bank WDI,
+> `worldbank_goods_services_exports.csv`). `VA_share` (recipient
+> value-added content in the donor's exports) is built from
+> `value_added_exports.xlsx`, sourced from the World Bank's World
+> Integrated Trade Solution (WITS) Export Value Added (EVAD) country
+> statistics (https://wits.worldbank.org/analyticaldata/evad-countrystats.aspx),
+> scaled by the donor's total exports from the same WDI file.
+
+`data/processed/` and `output/figures/` start empty and are populated by
+running the code (e.g. `CRS_Data.xlsx`, `modality_plot.png`). See
+`data/codebook.md` for definitions of the constructed variables in the final
+panel.
 
 ## Running the workflow
 
-1. Open `bargaining-power-paper.Rproj` in RStudio (this makes the project root
-   resolvable via the `here` package, which all file paths rely on).
-2. Make sure `data/raw/` is populated as above.
+1. Open `bargaining-power-paper.Rproj` in RStudio (this makes the project
+   root resolvable via the `here` package, which all file paths rely on).
+2. Populate `data/raw/` as described above.
 3. Run in order:
    - `code/01_build_dataset.R` — builds `data/processed/CRS_Data.xlsx`
    - `code/02_descriptive_stats.R` — independent of step 1; produces the paper's descriptive numbers/figure
    - `code/03_analysis.Rmd` — reads `data/processed/CRS_Data.xlsx`, runs the models, knit for the full output
 
-Each script sources `code/00_packages.R` itself, so they can be run standalone
-once `data/raw/` and (for step 3) `data/processed/CRS_Data.xlsx` exist.
+Each script sources `code/00_packages.R` itself, so they can be run
+standalone once `data/raw/` and (for step 3) `data/processed/CRS_Data.xlsx`
+exist.
 
 ### Packages
 
@@ -114,5 +128,12 @@ All three scripts depend on `here`, `dplyr`, `ggplot2`, `tidyr`, `writexl`, `rea
 `patchwork`, `interactions`, `RColorBrewer`, `effects`, and `countrycode`
 — see `code/00_packages.R` for the full list.
 
-A natural next step for reproducibility is to pin these with
-[`renv`](https://rstudio.github.io/renv/) (`renv::init()`), which isn't set up yet.
+Package versions are pinned with [`renv`](https://rstudio.github.io/renv/):
+after opening `bargaining-power-paper.Rproj`, run `renv::restore()` to
+install the exact versions recorded in `renv.lock`.
+
+## Questions
+
+If anything here is unclear or a reviewer needs help reproducing a specific
+table or figure, please reach out — I'm happy to walk through any part of
+the pipeline.

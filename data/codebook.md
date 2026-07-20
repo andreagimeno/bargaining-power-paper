@@ -22,7 +22,8 @@ from the column name alone.
 |---|---|
 | `flow_log` | `log1p(USD_Disbursement)`, floored at 0 — aid size |
 | `ChannelBalance` | Design/delivery-channel command (bounded share; see "Zero-handling" note in `code/01_build_dataset.R`) |
-| `trade_concession` / `preference_margin` | Policy concession; `preference_margin = -eff_tariff` (the donor's effective tariff preference extended to the recipient) |
+| `preference_margin` | Policy concession (primary DV); `mfn_rate - eff_tariff` — the recipient's MFN rate minus the effectively-applied rate on the donor's goods; nets out the recipient's general tariff stance, isolating the donor-specific concession |
+| `trade_concession` | Policy concession (robustness variant, Appendix B); `-eff_tariff`, the negative of the raw effectively-applied rate (not MFN-netted) |
 
 ## Bargaining power construct (`alpha`)
 

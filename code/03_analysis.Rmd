@@ -180,7 +180,7 @@ cat("\n--- alpha vs outcomes (CIRCULARITY CHECK — want modest |r|) ---\n")
 print(round(cor(cbind(alpha   = CRS_Data$alpha_core,
                       flow    = log1p(CRS_Data$USD_Disbursement),
                       channel = CRS_Data$ChannelBalance,
-                      trade   = CRS_Data$trade_concession),
+                      trade   = CRS_Data$preference_margin),
                 use = "pairwise.complete.obs"), 2))
 
 cat("\n--- core vs extended alpha (should be very highly correlated) ---\n")
@@ -211,7 +211,7 @@ write_xlsx(CRS_Data, here::here("data/processed/CRS_Data3.xlsx"))
 # Three jointly-estimated equations:
 #   flow     = flow_log         (aid size)
 #   channel  = ChannelBalance   (design command)
-#   trade    = trade_concession (policy concession; = -eff_tariff)
+#   trade    = preference_margin (policy concession; = mfn_rate - eff_tariff)
 #
 # Regressors (the Nash structure):
 #   alpha_z  relative bargaining power           (the four-dimension composite)
@@ -332,16 +332,23 @@ fit_coefs <- function(df) {
   mf <- lm(flow_log ~ alpha_z + dR_z + dD_z + Year_f, d)
   mc <- lm(ChannelBalance ~ alpha_z + dR_z + dD_z + Year_f, d)
   mt <- lm(preference_margin ~ alpha_z + dR_z + dD_z + Year_f, d)
-  df_ <- lm(flow_log          ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
-  dc_ <- lm(ChannelBalance    ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
-  dt_ <- lm(preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f, d)
+
+  # Decomposition is jointly estimated as a SUR (same regressors in all three
+  # equations, so coefficients match per-equation OLS exactly; kept as SUR here
+  # so the resampled object matches the aggregate model's estimator):
+  sur_dec <- systemfit(list(
+    flow    = flow_log          ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f,
+    channel = ChannelBalance    ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f,
+    trade   = preference_margin ~ s_urgency_core + s_geo + s_comm + s_inst + dR_z + dD_z + Year_f),
+    method = "SUR", data = d)
+  gs <- function(eq, t) unname(coef(sur_dec)[paste0(eq, "_", t)])
 
   c(flow_alpha=g(mf,"alpha_z"),  flow_dR=g(mf,"dR_z"),  flow_dD=g(mf,"dD_z"),
     chan_alpha=g(mc,"alpha_z"),  chan_dR=g(mc,"dR_z"),  chan_dD=g(mc,"dD_z"),
     trade_alpha=g(mt,"alpha_z"), trade_dR=g(mt,"dR_z"), trade_dD=g(mt,"dD_z"),
-    flow_urg=g(df_,D[1]),  flow_geo=g(df_,D[2]),  flow_comm=g(df_,D[3]),  flow_inst=g(df_,D[4]),
-    chan_urg=g(dc_,D[1]),  chan_geo=g(dc_,D[2]),  chan_comm=g(dc_,D[3]),  chan_inst=g(dc_,D[4]),
-    trade_urg=g(dt_,D[1]), trade_geo=g(dt_,D[2]), trade_comm=g(dt_,D[3]), trade_inst=g(dt_,D[4]))
+    flow_urg=gs("flow",D[1]),    flow_geo=gs("flow",D[2]),    flow_comm=gs("flow",D[3]),    flow_inst=gs("flow",D[4]),
+    chan_urg=gs("channel",D[1]), chan_geo=gs("channel",D[2]), chan_comm=gs("channel",D[3]), chan_inst=gs("channel",D[4]),
+    trade_urg=gs("trade",D[1]),  trade_geo=gs("trade",D[2]),  trade_comm=gs("trade",D[3]),  trade_inst=gs("trade",D[4]))
 }
 
 point <- fit_coefs(build_alpha(CRS_Data))
@@ -541,27 +548,64 @@ ggplot(fig_df, aes(terc, est, group = pair, colour = pair)) +
 ### Robustness:
 
 ```{r}
-# Zeros / extensive margin (flows). Build the full dyad-year grid and run PPML, keeping zeros:
-
-all_recipients <- unique(CRS_Data$RecipientName)
-grid <- expand.grid(DonorName = c("France","Germany","Japan","United Kingdom","United States"),
-                    RecipientName = all_recipients, Year = as.character(2006:2023),
-                    stringsAsFactors = FALSE)
-CRS_full <- grid %>% left_join(CRS_Data, by = c("DonorName","RecipientName","Year")) %>%
-  mutate(Total_AfT = ifelse(is.na(Total_AfT), 0, Total_AfT), had_aft = as.integer(Total_AfT > 0))
-fixest::fepois(Total_AfT ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
-                 log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
-               cluster = ~dyad_id, data = CRS_full)
-
-# Alternative trade DVs. Re-run the trade equation with preference_margin (donor-specific depth; expect a zero mass — PPML or two-part is cleaner) and with eff_tariff_pk (peak-trimmed).
-# Channel measure. Swap the bounded share for the logit transform.
-# Donor + recipient fixed effects (you can't use full dyad FE — they'd absorb time-invariant BP inputs):
+# Both robustness checks below use donor + recipient (NOT full dyad) fixed
+# effects instead of the main dyad-level SUR: alpha is overwhelmingly
+# between-dyad (see Descriptives above), so dyad FE would absorb it, but
+# donor and recipient FE separately still leave alpha's between-dyad
+# variation identified, while soaking up time-invariant donor- and
+# recipient-level confounds. Checked in the order they appear in the paper.
 ```
 
-```{r}
-fixest::feols(trade_concession ~ BP_between_c + BPb2 + BP_within_c + BPw2 +
-                log_Other_AfT_lag + donor_threat_dyad_lag | DonorName + RecipientName + Year,
-              cluster = ~dyad_id, data = CRS_Data)   # repeat per equation
+#### Appendix B — Alternative trade DV, under donor + recipient fixed effects:
 
-# Threat-point sensitivity. Drop donor_threat_dyad_lag (replaceability is partly mechanical with flow size); try alternative recipient outside-option measures.
+```{r}
+# Primary DV is preference_margin (mfn_rate - eff_tariff); the alternative is
+# trade_concession (-eff_tariff, raw levels, not MFN-netted). Same est sample
+# as the main SUR (n_dims_core == 4 + all model vars present).
+
+est$dyad_id <- paste(est$DonorName, est$RecipientName)
+
+feB_primary <- fixest::feols(preference_margin ~ alpha_z + dR_z + dD_z | DonorName + RecipientName + Year_f,
+                              cluster = ~dyad_id, data = est)
+feB_alt     <- fixest::feols(trade_concession  ~ alpha_z + dR_z + dD_z | DonorName + RecipientName + Year_f,
+                              cluster = ~dyad_id, data = est)
+
+etable(feB_primary, feB_alt,
+       headers = c("preference_margin (primary)", "trade_concession (alt.)"))
+```
+
+#### Appendix C — Augmented bargaining-power composite, under donor + recipient fixed effects:
+
+```{r}
+# alpha_core (primary) vs alpha_ext (augments the resilience dimension with
+# eci and inverted cost-of-trade). Sample is held fixed across both
+# composites (n_dims_core == 4 AND n_dims_ext == 4) so the comparison
+# isolates the composite-construction choice, not sample composition.
+
+est_ext <- CRS_Data %>%
+  filter(n_dims_core == 4, n_dims_ext == 4,
+         !is.na(alpha_core), !is.na(alpha_ext),
+         !is.na(flow_log), !is.na(ChannelBalance), !is.na(preference_margin),
+         !is.na(log_Other_AfT_lag), !is.na(donor_threat_dyad_lag)) %>%
+  mutate(Year_f      = droplevels(factor(Year_int)),
+         alpha_z     = z(alpha_core),
+         alpha_ext_z = z(alpha_ext),
+         dR_z        = z(log_Other_AfT_lag),
+         dD_z        = z(donor_threat_dyad_lag),
+         dyad_id     = paste(DonorName, RecipientName))
+
+cat("Appendix C estimation N:", nrow(est_ext),
+    "| dyads:", dplyr::n_distinct(est_ext$dyad_id),
+    "| corr(alpha_core, alpha_ext) on this sample:",
+    round(cor(est_ext$alpha_core, est_ext$alpha_ext), 3), "\n")
+
+flow_core  <- fixest::feols(flow_log          ~ alpha_z     + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+flow_ext   <- fixest::feols(flow_log          ~ alpha_ext_z + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+chan_core  <- fixest::feols(ChannelBalance    ~ alpha_z     + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+chan_ext   <- fixest::feols(ChannelBalance    ~ alpha_ext_z + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+trade_core <- fixest::feols(preference_margin ~ alpha_z     + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+trade_ext  <- fixest::feols(preference_margin ~ alpha_ext_z + dR_z + dD_z | DonorName + RecipientName + Year_f, cluster = ~dyad_id, data = est_ext)
+
+etable(flow_core, flow_ext, chan_core, chan_ext, trade_core, trade_ext,
+       headers = c("flow (core)", "flow (ext)", "channel (core)", "channel (ext)", "trade (core)", "trade (ext)"))
 ```
