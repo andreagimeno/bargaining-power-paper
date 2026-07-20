@@ -464,58 +464,8 @@ for (k in 1:3) {
 ### Discussion figures:
 
 ```{r}
-res2 <- within(res, {
-  outcome <- sub("_.*", "", coef)        # text before first underscore
-  term    <- sub("^[^_]*_", "", coef)    # text after first underscore
-  sig     <- ci_lo > 0 | ci_hi < 0       # CI excludes zero
-})
+# Figure 4 — cross-equation residual correlations by bargaining-power tercile:
 
-out_lab <- c(flow = "Aid flow (log)", chan = "Channel balance",
-             trade = "Trade (pref. margin)")
-```
-
-```{r}
-# Figure 5 — the main system (P1). Faceted by regressor with free x-scales, because the threat points are an order of magnitude larger than α and a shared scale would crush α's interval into invisibility:
-
-res_main <- subset(res2, term %in% c("alpha", "dR", "dD"))
-res_main$outcome <- factor(out_lab[res_main$outcome], levels = out_lab)
-res_main$term <- factor(res_main$term, c("alpha", "dR", "dD"),
-  c("Bargaining power (\u03b1)", "Recipient threat point", "Donor threat point"))
-
-ggplot(res_main, aes(estimate, outcome, colour = sig)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
-  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
-  facet_wrap(~ term, scales = "free_x") +
-  scale_y_discrete(limits = rev) +
-  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
-  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(panel.grid.major.y = element_blank())
-# ggsave(here::here("output/figures/Figure5_system.png"), width = 9, height = 3.2, dpi = 300)
-```
-
-```{r}
-# Figure 6 — the decomposition (P2). Faceted by outcome with a shared x-scale on purpose: that's what makes the point, since commercial dependence is the only marker that crosses to the left of zero, and only in the trade panel, while geopolitical stake on trade visibly dwarfs everything else:
-
-res_dec <- subset(res2, term %in% c("urg", "geo", "comm", "inst"))
-res_dec$outcome <- factor(out_lab[res_dec$outcome], levels = out_lab)
-res_dec$term <- factor(res_dec$term, c("urg", "inst", "comm", "geo"),
-  c("Financial resilience", "Institutional capacity",
-    "Commercial dependence", "Geopolitical stake"))
-
-ggplot(res_dec, aes(estimate, term, colour = sig)) +
-  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey55") +
-  geom_pointrange(aes(xmin = ci_lo, xmax = ci_hi), linewidth = 0.6, fatten = 3) +
-  facet_wrap(~ outcome) +
-  scale_y_discrete(limits = rev) +
-  scale_colour_manual(values = c(`TRUE` = "red", `FALSE` = "grey65"), guide = "none") +
-  labs(x = "Standardized coefficient (95% CI)", y = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(panel.grid.major.y = element_blank())
-# ggsave(here::here("output/figures/Figure6_decomposition.png"), width = 9, height = 3.4, dpi = 300)
-```
-
-```{r}
 pairs_nm <- c("Flow – Channel", "Flow – Policy", "Channel – Policy")  # bg/grp_point order: fc, ft, ct
 terc_nm  <- c("Low", "Mid", "High")
 
