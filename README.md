@@ -1,14 +1,7 @@
 # Aid for Trade and Donor–Recipient Bargaining Power
 
-This is the replication package for my paper, "Beyond the aid-for-policy
-bargain: recipient bargaining power in the age of project-based aid", which
-studies how donor–recipient bargaining power (UN voting alignment, colonial
-history, trade dependence, tariff concessions, migration ties, threat
-points, etc.) shapes the allocation of Aid for Trade (AfT). The workflow
-merges OECD DAC Creditor Reporting System (CRS) aid data with a range of
-trade, political, and economic datasets into a recipient-donor-year panel,
-then runs the paper's regressions and figures. This document explains how
-the repository is organized and how to reproduce the results from raw data.
+This is the replication package for my work-in-progress paper, "Beyond the aid-for-policy
+bargain: recipient bargaining power in the age of project-based aid".
 
 **Abstract:** Project-based lending has overtaken general budget support as the dominant aid modality,
 with Aid for Trade disbursements alone more than quadrupling since 2006 to nearly a quarter of total development aid.
@@ -45,9 +38,7 @@ rather than overall bargaining strength alone.
 ```
 
 The build stage and the analysis stage are separate scripts (see "Running
-the workflow" below), following the convention expected by most journal
-replication-package standards (e.g. the AEA Data and Code Availability
-Standard): data construction is reproducible independently of the modeling,
+the workflow" below). Data construction is reproducible independently of the modeling,
 and each script states its inputs/outputs at the top.
 
 ## Data
