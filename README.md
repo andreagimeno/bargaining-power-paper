@@ -75,9 +75,7 @@ data/raw/
     ├── worldbank_goods_services_exports.csv                   # World Bank WDI
     ├── worldbank_wgi.xlsx                                     # World Bank Worldwide Governance Indicators
     ├── atlas_eci_hs96_hs4.csv                                 # Economic Complexity Index (Harvard Growth Lab / Atlas of Economic Complexity)
-    ├── worldbank_natural_resource_rents_pct_gdp.csv           # World Bank WDI
     ├── oecd_foreign_population_inflows.csv                    # OECD International Migration Database
-    ├── oecd_asylum_seeker_inflows.csv                         # OECD International Migration Database
     ├── value_added_exports.xlsx                               # World Bank WITS, Export Value Added (EVAD) country stats: https://wits.worldbank.org/analyticaldata/evad-countrystats.aspx (multi-sheet, one sheet per year)
     ├── worldbank_total_reserves_months_imports.csv            # World Bank WDI
     ├── worldbank_gdp_growth.csv                                # World Bank WDI
