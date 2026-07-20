@@ -1,13 +1,30 @@
 # Aid for Trade and Donor–Recipient Bargaining Power
 
-This is the replication package for my paper studying how donor–recipient
-bargaining power (UN voting alignment, colonial history, trade dependence,
-tariff concessions, migration ties, threat points, etc.) shapes the
-allocation of Aid for Trade (AfT). The workflow merges OECD DAC Creditor
-Reporting System (CRS) aid data with a range of trade, political, and
-economic datasets into a recipient-donor-year panel, then runs the paper's
-regressions and figures. This document explains how the repository is
-organized and how to reproduce the results from raw data.
+This is the replication package for my paper, "Beyond the aid-for-policy
+bargain: recipient bargaining power in the age of project-based aid", which
+studies how donor–recipient bargaining power (UN voting alignment, colonial
+history, trade dependence, tariff concessions, migration ties, threat
+points, etc.) shapes the allocation of Aid for Trade (AfT). The workflow
+merges OECD DAC Creditor Reporting System (CRS) aid data with a range of
+trade, political, and economic datasets into a recipient-donor-year panel,
+then runs the paper's regressions and figures. This document explains how
+the repository is organized and how to reproduce the results from raw data.
+
+**Abstract:** Project-based lending has overtaken general budget support as the dominant aid modality,
+with Aid for Trade disbursements alone more than quadrupling since 2006 to nearly a quarter of total development aid.
+Nevertheless, bargaining in bilateral aid negotiations is still understood as a single exchange of money for policy.
+This paper develops an alternative extended framework which shows bargaining operates across three key stakes at once:
+flow size, policy concessions and project design and implementation command. Using a dyadic panel of the five largest
+bilateral Aid for Trade donors and every aid-eligible recipient country between 2006 and 2023, the paper constructs a
+Nash-bargaining measure of relative bargaining power and estimates its effect on all three negotiation outcomes jointly.
+Bargaining power shapes the three outcomes simultaneously, but its effect is the cleanest on project design and implementation
+control, the dimension conventional models omit entirely. A one-standard deviation increase in recipient bargaining power
+relative to the donor is found to shift Aid for Trade project delivery roughly 22% towards recipient-controlled channels.
+Recipients also secure larger Aid for Trade flows as their bargaining position strengthens, and these two gains bundle
+together rather than trade off. For recipient governments, design and implementation control, not aid volume, is the
+most reliable channel for converting bargaining strength into control over the aid relations they enter. Retaining
+trade policy space, by contrast, is shown to require a more specific asset, namely commercial leverage over the donor,
+rather than overall bargaining strength alone.
 
 ## Repository structure
 
